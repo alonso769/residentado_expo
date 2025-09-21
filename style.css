@@ -1,0 +1,190 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #f0f2f5;
+}
+
+.collage-container {
+    display: flex;
+    max-width: 1400px;
+    margin: 20px auto;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+/* Estilos de la sección de texto lateral */
+.text-section {
+    background-color: #007bff; /* Color azul */
+    color: white;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-width: 350px;
+}
+
+.logo {
+    max-width: 350px; /* Cambia este valor a uno más grande */
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 2.5em;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.button-container {
+    display: flex;
+    align-items: center;
+    margin-top: 50px;
+}
+
+.doctor-icon {
+    max-width: 80px;
+    margin-right: 15px;
+}
+
+.dashboard-button {
+    background-color: #5cb85c; /* Color verde */
+    border: none;
+    color: white;
+    padding: 15px 30px;
+    font-size: 1.2em;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.3s ease;
+}
+
+.dashboard-button:hover {
+    background-color: #4cae4c;
+}
+
+.hand-cursor {
+    font-size: 1.5em;
+    margin-left: 10px;
+    animation: bounce 1s infinite;
+}
+
+/* Animación del cursor */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Estilos de la cuadrícula de imágenes */
+.image-grid {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+}
+
+.image-row-1, .image-row-2, .image-row-3 {
+    display: flex;
+    gap: 10px;
+}
+
+.image-grid img {
+    border-radius: 5px;
+    object-fit: cover;
+}
+
+.img-small {
+    flex: 1;
+    height: 180px; /* Ajusta la altura si es necesario */
+}
+
+.img-large-vertical {
+    flex: 2;
+    height: 180px; /* La misma altura que la imagen pequeña */
+}
+
+.img-medium {
+    flex: 1;
+    height: 300px;
+}
+
+.img-large {
+    flex: 2;
+    height: 300px;
+}
+
+.img-full-width {
+    flex: 1;
+    height: 250px;
+    width: 100%;
+}
+
+/* Caja flotante en la esquina inferior derecha */
+.floating-box {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    max-width: 250px;
+}
+
+.floating-box img {
+    max-width: 100px;
+    margin-bottom: 5px;
+}
+
+.floating-box p {
+    font-size: 0.9em;
+    margin: 0;
+    color: #555;
+}
+
+.dashboard-info {
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Responsive design para pantallas más pequeñas */
+@media (max-width: 768px) {
+    .collage-container {
+        flex-direction: column;
+    }
+
+    .text-section {
+        min-width: auto;
+    }
+
+    .image-row-1, .image-row-2, .image-row-3 {
+        flex-direction: column;
+    }
+
+    .img-small, .img-large-vertical, .img-medium, .img-large, .img-full-width {
+        width: 100%;
+        height: auto;
+    }
+
+    .floating-box {
+        position: static;
+        margin-top: 20px;
+    }
+}

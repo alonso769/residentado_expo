@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N° de Campos Clínicos según Carrera del Primer Nivel de Atención</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0a2463;
+      color: white;
+      padding: 20px;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    .container {
+      max-width: 1700px;
+      margin: 0 auto;
+      background-color: #0a2463;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+    /* 🔹 Contenedor gráfico + botones */
+    .content-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+    .chart-container {
+      flex: 1;
+      height: 900px;
+      padding: 10px;
+    }
+    /* 🔹 Estilos de los botones */
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .nav-buttons a {
+      text-decoration: none;
+      background: #1e88e5;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      text-align: center;
+      min-width: 220px;
+    }
+    .nav-buttons a:hover {
+      background: #1565c0;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>N° DE CAMPOS CLÍNICOS SEGÚN CARRERA DEL PRIMER NIVEL DE ATENCIÓN</h1>
+
+    <!-- 🔹 Gráfico a la izquierda / Botones a la derecha -->
+    <div class="content-flex">
+      <div class="chart-container">
+        <canvas id="camposClinicosChart"></canvas>
+      </div>
+
+      <div class="nav-buttons">
+        <a href="convenios.html">Convenios por Universidad</a>
+        <a href="grafico_barra.html">Campos de Formación</a>
+        <a href="https://app.powerbi.com/view?r=eyJrIjoiOTBlZWNjMTctYWY5YS00YmQ2LWE3NzktYWU0ZDg3YTMzYTVhIiwidCI6Ijk4MzIyM2QxLTE5N2QtNDAwYS04ZDVhLTE4ZWQ5ZTU5YjMzYyIsImMiOjR9" target="_blank">
+          Residentado
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const ctx = document.getElementById('camposClinicosChart').getContext('2d');
+
+      const data = {
+        labels: [
+          'MEDICINA HUMANA',
+          'ENFERMERÍA',
+          'OBSTETRICIA',
+          'ODONTOLOGÍA',
+          'NUTRICIÓN',
+          'Lab. clínico y anat. Patológica',
+          'Terapia física y rehabilitación',
+          'Radiología',
+          'Terapia de lenguaje',
+          'Terapia ocupacional',
+          'Optometría',
+          'FARMACIA Y BIOQUÍMICA',
+          'PSICOLOGÍA',
+          'BIOLOGIA',
+          'TRABAJO SOCIAL',
+          'MEDICINA VETERINARIA',
+          'INGENIERIA SANITARIA',
+          'QUIMICA'
+        ],
+        datasets: [
+          {
+            label: '2026',
+            data: [494, 514, 261, 144, 221, 137, 50, 35, 33, 32, 11, 96, 293, 19, 101, 35, 6, 4],
+            backgroundColor: '#36A2EB',
+          },
+          {
+            label: '2025',
+            data: [300, 311, 161, 121, 160, 119, 32, 29, 20, 17, 10, 79, 153, 44, 8, 0, 0, 0],
+            backgroundColor: '#FFCE56',
+          }
+        ]
+      };
+
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            bottom: 80
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: 'white',
+              font: { size: 13 },
+              maxRotation: 45,
+              minRotation: 45
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: 'white',
+              font: { size: 14 },
+              stepSize: 100
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              color: 'white',
+              font: { size: 16 }
+            }
+          },
+          tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            titleColor: 'white',
+            bodyColor: 'white',
+            bodyFont: { size: 14 }
+          },
+          datalabels: {
+            color: 'white',
+            anchor: 'end',
+            align: 'top',
+            formatter: (value) => value,
+            font: {
+              weight: 'bold',
+              size: 16
+            }
+          }
+        }
+      };
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: data,
+        options: options,
+        plugins: [ChartDataLabels]
+      });
+    });
+  </script>
+</body>
+</html>

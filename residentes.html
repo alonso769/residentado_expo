@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Externos por Sede Docente</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .dashboard-container {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 1400px;
+            width: 100%;
+        }
+        .main-title {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .content-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+        }
+        .chart-section {
+            flex: 2;
+            min-width: 600px;
+        }
+        .chart-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .chart-header h2 {
+            color: #34495e;
+            font-size: 1.8em;
+            margin: 0;
+        }
+        .chart-header .subtitle {
+            color: #7f8c8d;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+        .chart-container {
+            position: relative;
+            height: 800px;
+            background-color: #fcfcfc;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        .chart-info {
+            text-align: center;
+            color: #95a5a6;
+            font-style: italic;
+            margin-top: 15px;
+        }
+        .details-section {
+            flex: 1;
+            min-width: 350px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        .details-section h2 {
+            color: #34495e;
+            margin-top: 0;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        #details-box {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+        .placeholder {
+            color: #bdc3c7;
+            text-align: center;
+            margin-top: 50px;
+            font-size: 1.1em;
+        }
+        .university-card {
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .university-card h3 {
+            margin: 0 0 5px 0;
+            color: #2980b9;
+            font-size: 1.2em;
+        }
+        .university-card p {
+            margin: 3px 0;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .university-card .label {
+            font-weight: 600;
+        }
+        .university-card .info {
+            font-weight: normal;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1 class="main-title">Distribución de Externos por Sede Docente</h1>
+        <div class="content-wrapper">
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h2 id="chartTitle"></h2>
+                    <p class="subtitle">Análisis de la cantidad de convenios externos por sede docente.</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="universidadChart"></canvas>
+                </div>
+                <p class="chart-info">Haz clic en cada barra para ver los detalles de los convenios de esa sede.</p>
+            </div>
+            <div class="details-section">
+                <h2>Detalles de Convenios a la Diris</h2>
+                <div id="details-box">
+                    <p class="placeholder">Selecciona una barra del gráfico para ver los detalles de los convenios.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const conveniosData = [
+            {"UNIVERSIDAD": "UNIVERSIDAD CIENTIFICA DEL SUR S.A.C.", "ESPECIALIDAD": "PATOLOGÍA CLINICA", "SEDE DOCENTE": "H.S ARZOBISPO LOAYSA", "RESIDENTE": "M.R MARTHA MARIA DEL CARMEN MUÑOZ CARDENAS", "ROTACIÓN SEDE U OFICINA": "CS JESUS MARIA", "PERIODO": "FEBRERO", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "MEDICINA INTERNA", "SEDE DOCENTE": "H.S SAN JUAN DE LURIGANCHO", "RESIDENTE": "M.R. VÍCTOR HUGO CÓRDOVA REBAZA", "ROTACIÓN SEDE U OFICINA": "CS JESUS MARIA", "PERIODO": "FEBRERO", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "FARMACIA HOSPITALARIA", "SEDE DOCENTE": "INST MATERNO PERINATAL", "RESIDENTE": "Q.F.R ANAHI KATHERINE BENDEZU GALINDO", "ROTACIÓN SEDE U OFICINA": "OFICINA DE ACCESO, USO RACIONAL DE MEDICAMENTOS, FARMACOVIGILANCIA Y TECNOVIGILANCIA - DIRIS LC", "PERIODO": "FEBRERO - MARZO", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA DEL NIÑO Y ADOLESCENTE", "SEDE DOCENTE": "H.S GUILLERMO ALMENARA", "RESIDENTE": "M.R ROSA MILAGROS BRAVO TORRES", "ROTACIÓN SEDE U OFICINA": "CSMC KUYANAKUSUN", "PERIODO": "ABRIL", "RIS": "RIS 1"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "CS CHACARILLA DE OTERO", "RESIDENTE": "M.R NELIDA PAOLA BACA CABANILLAS", "ROTACIÓN SEDE U OFICINA": "DIRECCIÓN DE INTERCAMBIO PRESTACIONAL, ORGANIZACIÓN Y SERVICIOS DE SALUD DEL MINSA", "PERIODO": "ABRIL", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S FUERZA AÉREA DEL PERÚ", "RESIDENTE": "M.R JESSICA MELIZZA BAUTISTA RICONA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "ABRIL - MAYO", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "M.R SERGUIO EDMUNDO HERVIAS MAQUINA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN MARCOS", "PERIODO": "MAYO", "RIS": "RIS 1"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S ALBERTO SABOGAL", "RESIDENTE": "M.R SAMANTHA ELIZABETH MEDINA ZAGA", "ROTACIÓN SEDE U OFICINA": "CSMC KUYANAKUSUN", "PERIODO": "JUNIO", "RIS": "RIS 1"},
+            {"UNIVERSIDAD": "UNIVERSIDAD ANTONIO ORREGO", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S VICTOR LAZARTE ECHEGARRAY", "RESIDENTE": "M.R KARIN LLANCARI OLIVERA", "ROTACIÓN SEDE U OFICINA": "CSM EXCELENCIA SAN MIGUEL", "PERIODO": "JUNIO", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PEDIATRIA", "SEDE DOCENTE": "H.S EMERGENCIAS PEDIATRICAS", "RESIDENTE": "M.R HAYDEE VICTORIA PEREZ SANCHEZ", "ROTACIÓN SEDE U OFICINA": "CS BAYOVAR", "PERIODO": "JUNIO", "RIS": "RIS 6"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VALDIZAN", "RESIDENTE": "M.R KERLLY ZEZANI ESPINOZA MEZA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "AGOSTO - SETIEMBRE", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VALDIZAN", "RESIDENTE": "M.R APAZA APAZA CANDIDA DEL ROSARIO", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "AGOSTO - SETIEMBRE", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "M.R LUCIA DEL CARMEN FLORES FARIAS", "ROTACIÓN SEDE U OFICINA": "CSMC KUYANAKUSUN", "PERIODO": "JULIO - AGOSTO", "RIS": "RIS 1"},
+            {"UNIVERSIDAD": "UNIVERSIDAD SAN MARTIN DE PORRES", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "M.R JOSE LUIS GUTIERREZ MONTOYA", "ROTACIÓN SEDE U OFICINA": "CSMC HONORIO DELGADO", "PERIODO": "JULIO-AGOSTO", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "CAP III SAN ISIDRO", "RESIDENTE": "M.R JENNY MACO LUJAN", "ROTACIÓN SEDE U OFICINA": "CSM EXCELENCIA SAN MIGUEL", "PERIODO": "JULIO", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA DE CIENCIAS APLICADAS S.A.C.", "ESPECIALIDAD": "MEDICINA INTERNA", "SEDE DOCENTE": "CLINICA GOOD HOPE", "RESIDENTE": "M.R LIZSETH PAMELLA TAPIA ACOSTA", "ROTACIÓN SEDE U OFICINA": "CS SAN MIGUEL", "PERIODO": "AGOSTO", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "CS CHACARILLA DE OTERO", "RESIDENTE": "M.R LILIANA CELESTE CHAGRAY RODRIGUEZ", "ROTACIÓN SEDE U OFICINA": "HOSPITAL SAN JOSE - CALLAO", "PERIODO": "SETIEMBRE", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "MR. KATIA ROSANA VELASQUEZ JAVIER", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "AGOSTO", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "MR. NATHALY HARYMY VALENCIA COLONIO", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "SETIEMBRE", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. ASIRI CUYAY NATHALIE PUENTES", "ROTACIÓN SEDE U OFICINA": "CSMC MAGDALENA", "PERIODO": "SETIEMBRE", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "H.S EMERGENCIAS GRAU", "RESIDENTE": "MR. WALTER MICHAEL NINAMANGO VICUÑA", "ROTACIÓN SEDE U OFICINA": "CSM EXCELENCIA SAN MIGUEL", "PERIODO": "OCTUBRE", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S PNP LUIS SAÉNZ", "RESIDENTE": "MR. ELIZABETH FATIMA GAMBOA HERNANDEZ", "ROTACIÓN SEDE U OFICINA": "CSMC LA VICTORIA", "PERIODO": "1 DE MARZO - 31 DE MAYO DE 2025", "RIS": "RIS 4"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "MR. MICHELLE MARYCARMEN PEZO", "ROTACIÓN SEDE U OFICINA": "CSMC JAVIER MARIATEGUI CHIAPPE", "PERIODO": "1 DE OCTUBRE - 30 DE NOVIEMBRE DE 2024", "RIS": "RIS 5"},
+            {"UNIVERSIDAD": "UNIVERSIDAD CIENTIFICA DEL SUR S.A.C.", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "UNIVERSIDAD CIENTÍFICA DEL SUR", "RESIDENTE": "MR.ROSA ALEJANDRA ALVA HUARAJ", "ROTACIÓN SEDE U OFICINA": "CS SAN LUIS", "PERIODO": "SETIEMBRE", "RIS": "RIS 4"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VALDIZAN", "RESIDENTE": "MR. ALEXANDRA STEFANY ZARATE PALOMINO", "ROTACIÓN SEDE U OFICINA": "CSMC LA VICTORIA", "PERIODO": "NOVIEMBRE", "RIS": "RIS 4"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "MR. JUAN JOSE FRANCISCO LAZARTE LOAYZA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "1 DE SETIEMBRE AL 30 DE NOVIEMBRE DE 2024", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. STEFANIE VALERY ASTUDILLO RUNIN", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "SETIEMBRE", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MC. LUIS JUAN CARLOS MAMANI OLIVARES", "ROTACIÓN SEDE U OFICINA": "CSMC MAGDALENA", "PERIODO": "OCTUBRE", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S GUILLERMO ALMENARA", "RESIDENTE": "MR. MARINELLY JAYE ROCA ZELA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN MARCOS", "PERIODO": "NOVIEMBRE", "RIS": "RIS 1"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VALDIZAN", "RESIDENTE": "MR. STEFANIE COLLADO MENDIOLA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "1 DE MARZO - 30 DE ABRIL DE 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "ESCUELA DE SALUD DEL EJERCITO", "RESIDENTE": "MR. KIMBERLY REQUELME PORTOCARRERO", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "1 DE MARZO - 30 DE ABRIL DE 2025", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S DANIEL ALCIDES CARRIÓN", "RESIDENTE": "MR. FERNANDO YOGUI LIBON", "ROTACIÓN SEDE U OFICINA": "CSMC SAN MARCOS", "PERIODO": "01 DE NOVIEMBRE - 31 DE DICIEMBRE", "RIS": "RIS 1"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "H.S ULDARICO ROCA FERNANDEZ", "RESIDENTE": "MR. JULIO CESAR BARRIOS LEON", "ROTACIÓN SEDE U OFICINA": "CSMC HONORIO DELGADO", "PERIODO": "NOVIEMBRE", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "CS CHACARILLA DE OTERO", "RESIDENTE": "MR. LILIANA CELESTE CHAGRAY RODRIGUEZ", "ROTACIÓN SEDE U OFICINA": "HOSPITAL SAN JOSE - CALLAO", "PERIODO": "NOVIEMBRE", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. ULISES ISRAEL PANEBRA NUÑEZ", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "01 NOVIEMBRE - 31 DICIEMBRE", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VALDIZAN", "RESIDENTE": "MR. ELIZABETH BIANCA FERNANDEZ AVELLANEDA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "01 NOVIEMBRE - 31 DICIEMBRE", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VALDIZAN", "RESIDENTE": "MR. DEYSI LIZBETH CHAMBILLA CHARCA", "ROTACIÓN SEDE U OFICINA": "CSMC KUYANAKUSUN", "PERIODO": "1 DE DICIEMBRE AL 31 DE ENERO DEL 2025", "RIS": "RIS 1"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. WENDY GRETHEL VILLAVERDE LEONARDO", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "01 DE DICIEMBRE AL 31 DE ENERO 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S ARZOBISPO LOAYSA", "RESIDENTE": "MR. RUTH KATHERINE SALINAS CHAMPAC", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "01 DE ENERO AL 28 DE FEBRERO DEL 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S GUILLERMO ALMENARA", "RESIDENTE": "MR. JESUS MIJAEL FLORES HIDALGO", "ROTACIÓN SEDE U OFICINA": "CSMC JESUS MARIA", "PERIODO": "01 DE DICIEMBRE AL 31 DE ENERO 2025", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "MR. MIJAIL DAVID CRUZ MAMANI", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "DICIEMBRE", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "MR. ROY ARNOLD LAGUNA CHAVEZ", "ROTACIÓN SEDE U OFICINA": "CSMC MAGDALENA", "PERIODO": "DICIEMBRE", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VALDIZAN", "RESIDENTE": "MR. CHRISTIAN ESTEPHANO PORTELLA PORTELLA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "ENERO DEL 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S GUILLERMO ALMENARA", "RESIDENTE": "MR. MARCO ANTONIO MACAVILCA CRUZ", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "ENERO DEL 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S GUILLERMO ALMENARA", "RESIDENTE": "MR. CLAUDIE LYNDA SANTILLANA PILCO", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "ENERO Y FEBRERO DEL 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. NATHALIE NIÑO ASIRI CUYAY", "ROTACIÓN SEDE U OFICINA": "CSM EXCELENCIA SAN MIGUEL", "PERIODO": "FEBRERO 2025", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. LUIS JUAN CARLOS MAMANI OLIVARES", "ROTACIÓN SEDE U OFICINA": "CSM EXCELENCIA SAN MIGUEL", "PERIODO": "FEBRERO 2025", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. ERICK ARTURO FALCON LADERA", "ROTACIÓN SEDE U OFICINA": "CSMC MAGDALENA", "PERIODO": "FEBRERO - ABRIL 2025", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. RODRIGO RAFAEL RODRIGUEZ VALERA", "ROTACIÓN SEDE U OFICINA": "CSM EXCELENCIA SAN MIGUEL", "PERIODO": "MARZO 2025", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S MILITAR CENTRAL CORONEL LUIS ARIAS SCHREIBER", "RESIDENTE": "MR. KIMBERLY REQUELME PORTOCARRERO", "ROTACIÓN SEDE U OFICINA": "CSMC HONORIO DELGADO", "PERIODO": "FEBRERO 2025", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD SAN MARTIN DE PORRES", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S GUILLERMO ALMENARA", "RESIDENTE": "MR. ROBERT WAGNER TORRES VASQUEZ", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "FEBRERO 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. URSULA VICTORIA JARA HUANCAYA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "FEBRERO 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "MR. NATALY VALENCIA COLONO", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "FEBRERO 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "CSMI SURQUILLO", "RESIDENTE": "MR. ESTRELLA CASTRO NORIEGA", "ROTACIÓN SEDE U OFICINA": "INSITUTO NACIONAL DEL NIÑO BREÑA", "PERIODO": "FEBRERO - MARZO 2025", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "CSMI SURQUILLO", "RESIDENTE": "MR. DANIEL GILBERT FERNANDEZ OBREGON", "ROTACIÓN SEDE U OFICINA": "INSITUTO NACIONAL DEL NIÑO BREÑA", "PERIODO": "MARZO 2025", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "MR. LUCIA DEL CARMEN FLORES FARIAS", "ROTACIÓN SEDE U OFICINA": "CSMC MAGDALENA", "PERIODO": "JUNIO 2025", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MR. SHIRLEY QUISPE SIGUEÑAS", "ROTACIÓN SEDE U OFICINA": "CSMC MAGDALENA", "PERIODO": "ABRIL - MAYO 2025", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "MC. LILIANA CELESTE CHAGRAY RODRIGUEZ", "ROTACIÓN SEDE U OFICINA": "HOSPITAL SAN JOSÉ - CALLAO", "PERIODO": "MARZO, ABRIL Y SETIEMBRE 2025", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "MEDICINA PEDIÁTRICA", "SEDE DOCENTE": "H.S SAN JUAN BAUTISTA - HUARAL", "RESIDENTE": "MC. RUBY TRIXY STEPHANY MOGOLLON RODRIGUEZ", "ROTACIÓN SEDE U OFICINA": "CSMC SAN ISIDRO", "PERIODO": "MARZO 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VANDIZÁN", "RESIDENTE": "MC. MAUREEN ROSA KUBOTA ROJAS", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "ABRIL Y MAYO 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "INST SALUD MENTAL HONORIO DELGADO", "RESIDENTE": "MC. URSULA VICTORIA JARA HUANCAYA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "ABRIL 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VANDIZÁN", "RESIDENTE": "MC. GACCLEM ALEXANDRA DEL POZO ECHEVARRÍA", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "ABRIL Y MAYO 2025", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD CIENTIFICA DEL SUR S.A.C.", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "MINSA", "RESIDENTE": "MC. ROSA ALEJANDRA ALVA HUARAJ", "ROTACIÓN SEDE U OFICINA": "CS SAN LUIS", "PERIODO": "SETIEMBRE. 2025", "RIS": "RIS 4"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HERMILIO VALDIZAN", "RESIDENTE": "Johany Edith Guevara Zavaleta", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "MAYO Y JUNIO 2025", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", "ESPECIALIDAD": "PSIQUIATRIA DEL NIÑO Y ADOLESCENTE", "SEDE DOCENTE": "H.S REBAGLIATII", "RESIDENTE": "Maira Tejada Diaz d", "ROTACIÓN SEDE U OFICINA": "CSMC MAGDALENA", "PERIODO": "45809", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", "ESPECIALIDAD": "PEDIATRIA", "SEDE DOCENTE": "H.S HIPOLITO UNANUE", "RESIDENTE": "Karol Peña Pachamango", "ROTACIÓN SEDE U OFICINA": "CS BREÑA", "PERIODO": "45809", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "CAP III SAN ISIDRO", "RESIDENTE": "Vannya Cecilia Herrera Enriquez", "ROTACIÓN SEDE U OFICINA": "CSMC JESUS MARIA", "PERIODO": "45809", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD SAN MARTIN DE PORRES", "ESPECIALIDAD": "ADMINISTRACION Y GESTION EN SALUD", "SEDE DOCENTE": "H.S SERGUI ERNESTO BERNALES", "RESIDENTE": "DIANA BAYGORREA ANTAYHUA", "ROTACIÓN SEDE U OFICINA": "OFICINA DE PROYECTOS DE INVERSION - DIRIS LC", "PERIODO": "45870", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "ADMINISTRACION Y GESTION EN SALUD", "SEDE DOCENTE": "INST SALUD DEL NIÑO SAN BORJA", "RESIDENTE": "Jose Cristhian Meza Malaga", "ROTACIÓN SEDE U OFICINA": "UNIDAD FUNCIONAL DE AUTORIZACIONES Y CATEGORIZACIONES DE IPRESS - DIRIS LC", "PERIODO": "JUNIO Y JULIO 2025", "RIS": ""},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S CAYETANO HEREDIA", "RESIDENTE": "Karina Luisa Obregon Gavilan", "ROTACIÓN SEDE U OFICINA": "CSMC JESUS MARIA", "PERIODO": "45992", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S CAYETANO HEREDIA", "RESIDENTE": "Marleni Pacori Puma", "ROTACIÓN SEDE U OFICINA": "CSMC JESUS MARIA", "PERIODO": "45870", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S SAN JUAN DE LURIGANCHO", "RESIDENTE": "Nathaly Andrea Neyra Muñoz", "ROTACIÓN SEDE U OFICINA": "CS MAX ARIAS SCHREIBER", "PERIODO": "45931", "RIS": "RIS 4"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "CSMI PACHACUTEC PERU COREA", "RESIDENTE": "Ana Maria Paz Catacora", "ROTACIÓN SEDE U OFICINA": "CSMC MAGDALENA", "PERIODO": "45962", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S CAYETANO HEREDIA", "RESIDENTE": "Lorena Nancy Vidal Damas", "ROTACIÓN SEDE U OFICINA": "CSMC JESUS MARIA", "PERIODO": "45901", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S CAYETANO HEREDIA", "RESIDENTE": "Carmen del Pilar Sanchez Calderon", "ROTACIÓN SEDE U OFICINA": "CSMC JESUS MARIA", "PERIODO": "46174", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD PERUANA CAYETANO HEREDIA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S CAYETANO HEREDIA", "RESIDENTE": "Frank Alexander Torres Huasupoma", "ROTACIÓN SEDE U OFICINA": "CSMC JESUS MARIA", "PERIODO": "45931", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S REBAGLIATII", "RESIDENTE": "Wendy de los Milagros Pastor Gallardo", "ROTACIÓN SEDE U OFICINA": "CSMC JESUS MARIA", "PERIODO": "NOVIEMBRE Y DICIEMBRE 2025", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD SAN MARTIN DE PORRES", "ESPECIALIDAD": "MEDICINA FAMILIAR Y COMUNITARIA", "SEDE DOCENTE": "DIRIS LS", "RESIDENTE": "Lucero de Belén Larrauri Chu", "ROTACIÓN SEDE U OFICINA": "CSMC SAN ISIDRO", "PERIODO": "MAYO, JUNIO Y JULIO 2026", "RIS": "RIS 3"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S LARCO HERRERA", "RESIDENTE": "Juanita Milagros Vergara Peña", "ROTACIÓN SEDE U OFICINA": "CSMC JESUS MARIA", "PERIODO": "45992", "RIS": "RIS 2"},
+            {"UNIVERSIDAD": "UNIVERSIDAD RICARDO PALMA", "ESPECIALIDAD": "PSIQUIATRIA", "SEDE DOCENTE": "H.S HIPOLITO UNANUE", "RESIDENTE": "Wendy Yohesly Puma Surco", "ROTACIÓN SEDE U OFICINA": "CSMC SAN BORJA", "PERIODO": "ENERO Y FEBRERO 2026", "RIS": ""}
+        ];
+
+        // Procesar los datos para el gráfico de sedes
+        const sedeCounts = {};
+        conveniosData.forEach(item => {
+            const sede = item["SEDE DOCENTE"].toUpperCase();
+            sedeCounts[sede] = (sedeCounts[sede] || 0) + 1;
+        });
+
+        // Ordenar sedes por conteo descendente para el gráfico
+        const sortedSedes = Object.keys(sedeCounts).sort((a, b) => sedeCounts[b] - sedeCounts[a]);
+        const sortedData = sortedSedes.map(sede => sedeCounts[sede]);
+
+        // Calcular el total de convenios
+        const totalConvenios = conveniosData.length;
+        document.getElementById('chartTitle').innerText = `Total de ${totalConvenios} Convenios por Sede Docente`;
+
+        // Generar colores aleatorios para las barras
+        const backgroundColors = sortedSedes.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`);
+        const borderColors = backgroundColors.map(color => color.replace('0.6', '1'));
+
+        // Configuración del gráfico
+        const ctx = document.getElementById('universidadChart').getContext('2d');
+        const universidadChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sortedSedes,
+                datasets: [{
+                    label: 'Número de Convenios',
+                    data: sortedData,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    title: {
+                        display: true,
+                        text: 'Total de Externos por Sede Docente',
+                        font: { size: 18, weight: 'bold' },
+                        color: '#34495e'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Total: ${context.parsed.x} Externos`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Número de Convenios',
+                            color: '#555'
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Sede Docente',
+                            color: '#555'
+                        },
+                        ticks: {
+                            autoSkip: false
+                        }
+                    }
+                },
+                onClick: (event, activeElements) => {
+                    const detailsBox = document.getElementById('details-box');
+                    detailsBox.innerHTML = '';
+                    if (activeElements.length > 0) {
+                        const clickedIndex = activeElements[0].index;
+                        const sedeSeleccionada = sortedSedes[clickedIndex];
+                        const conveniosEnSede = conveniosData.filter(c => c["SEDE DOCENTE"].toUpperCase() === sedeSeleccionada);
+                        conveniosEnSede.forEach(convenio => {
+                            const card = document.createElement('div');
+                            card.className = 'university-card';
+                            card.innerHTML = `
+                                <h3>${convenio["SEDE DOCENTE"]}</h3>
+                                <p><span class="label">Universidad:</span> <span class="info">${convenio["UNIVERSIDAD"]}</span></p>
+                                <p><span class="label">Especialidad:</span> <span class="info">${convenio["ESPECIALIDAD"]}</span></p>
+                                <p><span class="label">Residente:</span> <span class="info">${convenio["RESIDENTE"]}</span></p>
+                                <p><span class="label">Rotación:</span> <span class="info">${convenio["ROTACIÓN SEDE U OFICINA"]}</span></p>
+                                <p><span class="label">Período:</span> <span class="info">${convenio["PERIODO"]}</span></p>
+                            `;
+                            detailsBox.appendChild(card);
+                        });
+                    } else {
+                        detailsBox.innerHTML = '<p class="placeholder">Selecciona una barra del gráfico para ver los detalles.</p>';
+                    }
+                }
+            }
+        });
+
+        // Actualizar el texto al iniciar
+        document.getElementById('chartTitle').innerText = `Total de ${totalConvenios} Convenios por Sede Docente`;
+        document.querySelector('.chart-info').innerText = 'Haz clic en cada barra para ver los detalles de los convenios de esa sede.';
+    </script>
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Establecimientos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 10px;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 20px);
+            width: 100%;
+        }
+        .chart-card, .data-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-width: 0;
+        }
+        .chart-card {
+            flex: 2;
+        }
+        .data-card {
+            flex: 1.5;
+        }
+        .data-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .table-and-summary {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            height: calc(100% - 150px);
+        }
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+            border-top: 2px solid #2980b9;
+            padding-top: 10px;
+            min-width: 0;
+        }
+        .summary-container {
+            flex: 0.8;
+            overflow-y: auto;
+            border-top: 2px solid #e74c3c;
+            padding-top: 10px;
+            min-width: 0;
+        }
+        h2, h3 {
+            text-align: center;
+            margin: 5px 0;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        ul li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        ul li:hover {
+            opacity: 0.8;
+        }
+        ul li span {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        table th {
+            background: #2980b9;
+            color: #fff;
+            position: sticky;
+            top: 0;
+        }
+        canvas {
+            flex-grow: 1;
+            min-height: 0;
+        }
+        #chart-canvas-container {
+            width: 100%;
+            height: 100%;
+            max-width: 300px;
+            margin: auto;
+        }
+        /* Estilos para la lista de "Detalles de la Data" y las filas de la tabla */
+        .enviaron { background-color: #9b59b6; color: #fff; }
+        .llenado { background-color: #1abc9c; color: #fff; }
+        .no-enviaron { background-color: #3498db; color: #fff; }
+        .cerrado { background-color: #f1c40f; color: #fff; }
+        .no-reenviaron-correcciones { background-color: #e74c3c; color: #fff; }
+        .enviaron td, .llenado td, .no-enviaron td, .cerrado td, .no-reenviaron-correcciones td {
+            background-color: inherit;
+            color: inherit;
+        }
+        .chart-with-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .nav-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .nav-buttons a {
+    text-decoration: none;
+    background: #2980b9;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    text-align: center;
+    min-width: 200px;
+  }
+
+  .nav-buttons a:hover {
+    background: #1f6391;
+    transform: translateY(-2px);
+  }
+
+  #camposClinicosChart {
+    flex-grow: 1;
+  }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+  <div class="chart-with-buttons">
+    <!-- 🔹 Botones a la izquierda -->
+    <div class="nav-buttons">
+      <a href="convenios.html">Convenios por Universidad</a>
+      <a href="campos_clinicos.html">N° Campos de Cinicos por Carrera</a>
+      <a href="https://app.powerbi.com/view?r=eyJrIjoiOTBlZWNjMTctYWY5YS00YmQ2LWE3NzktYWU0ZDg3YTMzYTVhIiwidCI6Ijk4MzIyM2QxLTE5N2QtNDAwYS04ZDVhLTE4ZWQ5ZTU5YjMzYyIsImMiOjR9" target="_blank">
+        Residentado
+      </a>
+    </div>
+    <div class="container">
+        <div class="chart-card">
+            <h2>CAMPOS CLÍNICOS DEL PRIMER NIVEL DE ATENCIÓN</h2>
+            <h3>Distribución de 84 establecimientos</h3>
+            <div id="chart-canvas-container">
+                <canvas id="myChart"></canvas>
+            </div>
+           
+            
+        </div>
+
+        <div class="data-card">
+            <div class="data-content">
+                <h2 style="color: #2980b9;">Detallado</h2>
+                <ul id="data-list">
+                    <li onclick="mostrarTabla('ENVIARON')" class="enviaron">Enviaron <span>72</span></li>
+                    <li onclick="mostrarTabla('LLENADO CON LO DEL 2025')" class="llenado">Llenado con info 2025 <span>5</span></li>
+                    <li onclick="mostrarTabla('NO ENVIARON')" class="no-enviaron">No enviaron <span>5</span></li>
+                    <li onclick="mostrarTabla('CERRADO')" class="cerrado">Cerrado <span>1</span></li>
+                    <li onclick="mostrarTabla('NO REENVIARON CORRECIONES')" class="no-reenviaron-correcciones">No reenviaron correcciones <span>1</span></li>
+                </ul>
+                <div class="table-and-summary">
+                    <div class="table-container" id="detalleTabla">
+                        </div>
+                    <div class="summary-container" id="resumenRIS">
+                        <h3 style="color: #e74c3c;">Resumen por RIS</h3>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const datos = [
+            { RIS: "RIS 7", EESS: "CS 10 DE OCTUBRE", ESTADO: "ENVIARON" },
+            { RIS: "RIS 6", EESS: "CS BAYOVAR", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "CS BREÑA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS CAJA DE AGUA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS CAMPOY", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS CHACARILLA DE OTERO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "CS CHACRA COLORADA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CS CONDE DE LA VEGA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CS CONTROL DE ZOONOSIS", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "CS CRUZ DE MOTUPE", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS DANIEL ALCIDES CARRION", ESTADO: "ENVIARON" },
+            { RIS: "RIS 4", EESS: "CS EL PINO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "CS ENRIQUE MONTENEGRO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CS ESPECIALIZADORAUL PATRUCO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 6", EESS: "CS GANIMENDES", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "CS HUACA PANDO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 6", EESS: "CS HUASCAR II", ESTADO: "ENVIARON" },
+            { RIS: "RIS 6", EESS: "CS HUASCAR XV", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "CS JAIME ZUBIETA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "CS JESUS MARIA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "CS JOSE CARLOS MARIATEGUI", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "CS JUAN PABLO II", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CS JUAN PEREZ CARRANZA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS LA HUAYRONA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS LA LIBERTAD", ESTADO: "ENVIARON" },
+            { RIS: "RIS 3", EESS: "CS LINCE", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS MANGOMARCA", ESTADO: "LLENADO CON LO DEL 2025" },
+            { RIS: "RIS 4", EESS: "CS MAX ARIAS SCHREIBER", ESTADO: "LLENADO CON LO DEL 2025" },
+            { RIS: "RIS 6", EESS: "CS MEDALLA MILAGROSA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CS MIRONES", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CS MIRONES BAJO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 3", EESS: "CS SAM ATANACIO DE PEDREGAL", ESTADO: "ENVIARON" },
+            { RIS: "RIS 4", EESS: "CS SAN COSME", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS SAN FERNANDO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 6", EESS: "CS SAN HILARION", ESTADO: "ENVIARON" },
+            { RIS: "RIS 3", EESS: "CS SAN ISIDRO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 4", EESS: "CS SAN LUIS", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "CS SAN MIGUEL", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CS SAN SEBASTIAN", ESTADO: "ENVIARON" },
+            { RIS: "RIS 3", EESS: "CS SANTA CRUZ MIRAFLORES", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS SANTA FE DE TOTORITA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "CS SANTA MARIA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS SANTA ROSA DE LIMA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 4", EESS: "CS TODOS LOS SANTOS SAN BORJA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CS UNIDAD VECINAL N°3", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CS VILLA MARIA DEL PERPETUO SOCORRO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 3", EESS: "CS VILLA VICTORIA PORVENIR", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CS ZARATE", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "CSM EXCELENCIA SAN MIGUEL", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "CSMC HONORIO DELGADO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 6", EESS: "CSMC JAIME ZUBIETA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CSMC JAVIER MARIATEGUI", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "CSMC JESUS MARIA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CSMC KUYANAKUSUN", ESTADO: "CERRADO" },
+            { RIS: "RIS 4", EESS: "CSMC LA VICTORIA", ESTADO: "LLENADO CON LO DEL 2025" },
+            { RIS: "RIS 2", EESS: "CSMC MAGDALENA", ESTADO: "NO ENVIARON" },
+            { RIS: "RIS 5", EESS: "CSMC MANGOMARCA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "CSMC MIRONES BAJO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 6", EESS: "CSMC NUEVO PERÚ", ESTADO: "LLENADO CON LO DEL 2025" },
+            { RIS: "RIS 3", EESS: "CSMC SAN BORJA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 4", EESS: "CSMC SAN COSME", ESTADO: "ENVIARON" },
+            { RIS: "RIS 3", EESS: "CSMC SAN ISIDRO", ESTADO: "NO ENVIARON" },
+            { RIS: "RIS 1", EESS: "CSMC SAN MARCOS", ESTADO: "ENVIARON" },
+            { RIS: "RIS 3", EESS: "CSMC SURQUILLO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "CSMC VILLA CAMPOY", ESTADO: "ENVIARON" },
+            { RIS: "RIS 4", EESS: "CSMI EL PORVENIR", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "CSMI MAGDALENA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 3", EESS: "CSMI SURQUILLO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 2", EESS: "LABORATORIO REFERENCIAL", ESTADO: "LLENADO CON LO DEL 2025" },
+            { RIS: "RIS 5", EESS: "PS 15 DE ENERO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 6", EESS: "PS AYACUCHO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 5", EESS: "PS AZCARRUNZ ALTO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "PS CESAR VALLEJO", ESTADO: "NO ENVIARON" },
+            { RIS: "RIS 4", EESS: "PS EL PINO", ESTADO: "ENVIARON" },
+            { RIS: "RIS 4", EESS: "PS JARDIN SANTA ROSA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "PS JOSE CARLOS MARIATEGUI V ETAPA", ESTADO: "NO ENVIARON" },
+            { RIS: "RIS 7", EESS: "PS MARISCAL CACERES", ESTADO: "NO REENVIARON CORRECIONES" },
+            { RIS: "RIS 1", EESS: "PS PALERMO", ESTADO: "NO ENVIARON" },
+            { RIS: "RIS 6", EESS: "PS PROYECTOS ESPECIALES", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "PS RESCATE", ESTADO: "ENVIARON" },
+            { RIS: "RIS 6", EESS: "PS SAGRADA FAMILIA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 4", EESS: "PS SAN JUAN MASIAS", ESTADO: "ENVIARON" },
+            { RIS: "RIS 1", EESS: "PS SANTA ROSA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "PS TUPAC AMARU II", ESTADO: "ENVIARON" },
+        ];
+        
+        function mostrarTabla(estado) {
+            const filtrados = datos.filter((d) => d.ESTADO === estado);
+            filtrados.sort((a, b) => a.RIS.localeCompare(b.RIS));
+
+            const estadoClassMap = {
+                'ENVIARON': 'enviaron',
+                'LLENADO CON LO DEL 2025': 'llenado',
+                'NO ENVIARON': 'no-enviaron',
+                'CERRADO': 'cerrado',
+                'NO REENVIARON CORRECIONES': 'no-reenviaron-correcciones'
+            };
+            const filaClass = estadoClassMap[estado];
+
+            let tabla = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>RIS</th>
+                            <th>EESS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            filtrados.forEach((d) => {
+                tabla += `
+                    <tr class="${filaClass}">
+                        <td>${d.RIS}</td>
+                        <td>${d.EESS}</td>
+                    </tr>
+                `;
+            });
+            tabla += "</tbody></table>";
+            document.getElementById("detalleTabla").innerHTML = tabla;
+
+            const resumen = {};
+            filtrados.forEach((d) => {
+                if (!resumen[d.RIS]) {
+                    resumen[d.RIS] = 0;
+                }
+                resumen[d.RIS]++;
+            });
+
+            let resumenTabla = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>RIS</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            const sortedRisKeys = Object.keys(resumen).sort();
+            sortedRisKeys.forEach(ris => {
+                resumenTabla += `
+                    <tr class="${filaClass}">
+                        <td>${ris}</td>
+                        <td>${resumen[ris]}</td>
+                    </tr>
+                `;
+            });
+            resumenTabla += "</tbody></table>";
+            document.getElementById("resumenRIS").innerHTML = resumenTabla;
+        }
+
+        // Script para inicializar el gráfico
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById("myChart").getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["Establecimientos"],
+                    datasets: [
+                        {
+                            label: "No reenviaron correcciones",
+                            data: [1],
+                            backgroundColor: "#e74c3c",
+                            minBarLength: 15,
+                        },
+                        {
+                            label: "Cerrado",
+                            data: [1],
+                            backgroundColor: "#f1c40f",
+                            minBarLength: 15,
+                        },
+                        {
+                            label: "No enviaron",
+                            data: [5],
+                            backgroundColor: "#3498db",
+                        },
+                        {
+                            label: "Llenado con info 2025",
+                            data: [5],
+                            backgroundColor: "#1abc9c",
+                        },
+                        {
+                            label: "Enviaron",
+                            data: [72],
+                            backgroundColor: "#9b59b6",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                        },
+                        tooltip: {
+                            enabled: false,
+                        },
+                        datalabels: {
+                            color: "#fff",
+                            anchor: "center",
+                            align: "center",
+                            formatter: (value) => value,
+                            font: {
+                                weight: "bold",
+                                size: 16,
+                            },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            barPercentage: 0.1,
+                            categoryPercentage: 0.1,
+                            grid: {
+                                display: false,
+                            },
+                            ticks: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            display: false,
+                            grid: {
+                                display: false
+                            }
+                        },
+                    },
+                },
+                plugins: [ChartDataLabels],
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Universidades</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 10px;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 20px);
+            width: 100%;
+        }
+        .chart-card, .data-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-width: 0;
+        }
+        .chart-card {
+            flex: 2;
+        }
+        .data-card {
+            flex: 1.5;
+            overflow-y: auto;
+        }
+        .data-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+            border-top: 2px solid #2980b9;
+            padding-top: 10px;
+            min-width: 0;
+            margin-top: 20px;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.6s ease-in-out, opacity 0.6s ease-in-out, padding 0.6s ease-in-out;
+        }
+        .table-container.active {
+            max-height: 65vh;
+            opacity: 1;
+            padding-top: 10px;
+        }
+        h2, h3 {
+            text-align: center;
+            margin: 5px 0;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        ul li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        ul li:hover {
+            opacity: 0.8;
+            transform: scale(1.01);
+        }
+        ul li span {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            table-layout: fixed;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        table th {
+            background: #2980b9;
+            color: #fff;
+            position: sticky;
+            top: 0;
+        }
+        canvas {
+            flex-grow: 1;
+            min-height: 0;
+        }
+        #chart-canvas-container {
+            width: 100%;
+            height: 100%;
+            max-width: 300px;
+            margin: auto;
+        }
+        /* Estilos para la lista y las filas de la tabla */
+        .con-internos { border-left: 4px solid #9b59b6; }
+        .sin-internos { border-left: 4px solid #3498db; }
+        .vencido { border-left: 4px solid #e74c3c; }
+        .en-proceso { border-left: 4px solid #f1c40f; }
+        /* Efecto de pulso en el hover */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        table tbody tr:hover {
+            animation: pulse 0.5s ease-in-out;
+            cursor: pointer;
+        }
+        /* Efecto de desglose para cada fila */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        /* Barra de desplazamiento personalizada */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .chart-with-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .nav-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .nav-buttons a {
+    text-decoration: none;
+    background: #2980b9;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    text-align: center;
+    min-width: 200px;
+  }
+
+  .nav-buttons a:hover {
+    background: #1f6391;
+    transform: translateY(-2px);
+  }
+
+  #camposClinicosChart {
+    flex-grow: 1;
+  }
+    </style>
+</head>
+<body>
+        <div class="chart-container">
+  <div class="chart-with-buttons">
+    <!-- 🔹 Botones a la izquierda -->
+    <div class="nav-buttons">
+      <a href="campos_clinicos.html">N° Campos de Cinicos por Carrera</a>
+      <a href="grafico_barra.html">Campos de Formación</a>
+      <a href="https://app.powerbi.com/view?r=eyJrIjoiOTBlZWNjMTctYWY5YS00YmQ2LWE3NzktYWU0ZDg3YTMzYTVhIiwidCI6Ijk4MzIyM2QxLTE5N2QtNDAwYS04ZDVhLTE4ZWQ5ZTU5YjMzYyIsImMiOjR9" target="_blank">
+        Residentado
+      </a>
+    </div>
+    <div class="container">
+        <div class="chart-card">
+            <h2>DISTRIBUCIÓN DE CONVENIOS DE UNIVERSIDADES</h2>
+            <h3>Distribución de 39 convenios</h3>
+            <div id="chart-canvas-container">
+                <canvas id="myChart"></canvas>
+            </div>
+          
+        </div>
+        <div class="data-card">
+            <div class="data-content">
+                <h2 style="color: #2980b9;">Detallado por Universida - Facultad - Vigencia</h2>
+                <ul id="data-list">
+                    <li onclick="mostrarTabla('CON INTERNOS')" class="con-internos">Con Internos <span>24</span></li>
+                    <li onclick="mostrarTabla('SIN INTERNOS')" class="sin-internos">Sin Internos <span>10</span></li>
+                    <li onclick="mostrarTabla('VENCIDO CON INTERNOS')" class="vencido">Vencido con Internos <span>3</span></li>
+                    <li onclick="mostrarTabla('EN PROCESO DE RENOVACIÓN CON INTERNOS')" class="en-proceso">En Proceso de Renovación <span>2</span></li>
+                </ul>
+                <div class="table-container" id="detalleTabla"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const datos = [
+            { UNIVERSIDAD: "UNIVERSIDAD PERUANA DE CIENCIAS APLICADAS S.A.C.", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "19/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD CATOLICA SEDES SAPIENTIAE", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "5/12/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD CÉSAR VALLEJO", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "10/02/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD CIENCIAS Y HUMANIDADES", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "29/05/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD CIENTIFICA DEL SUR S.A.C.", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "15/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD CONTINENTAL S.A.C.", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "14/02/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD DE PIURA", FACULTAD: "FACULTAD DE MEDICINA HUMANA", ESTADO: "CON INTERNOS", VIGENCIA: "27/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD ENRIQUE GUZMAN Y VALLE", FACULTAD: "FACULTAD DE AGROPECUARIA Y NUTRICIÓN(CANTUTA)", ESTADO: "EN PROCESO DE RENOVACIÓN CON INTERNOS", VIGENCIA: "" },
+            { UNIVERSIDAD: "UNIVERSIDAD FEMENINA DEL SAGRADO CORAZON", FACULTAD: "FACULTAD DE NUTRICION Y ALIMENTACION", ESTADO: "SIN INTERNOS", VIGENCIA: "10/02/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD LE CORDON BLEU SAC", FACULTAD: "FACULTAD DE CIENCIAS DE LOS ALIMENTOS", ESTADO: "CON INTERNOS", VIGENCIA: "3/11/2025" },
+            { UNIVERSIDAD: "UNIVERSIDAD MARIA AUXILIADORA S.A.C.", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "20/03/2028" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL DANIEL ALCIDES CARRION", FACULTAD: "FACULTAD DE ODONTOLOGÍA", ESTADO: "CON INTERNOS", VIGENCIA: "19/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL DANIEL ALCIDES CARRION", FACULTAD: "FACULTAD DE MEDICINA HUMANA", ESTADO: "SIN INTERNOS", VIGENCIA: "18/05/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL DE TRUJILLO", FACULTAD: "FACULTAD DE MEDICINA", ESTADO: "SIN INTERNOS", VIGENCIA: "19/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL DEL ALTIPLANO DE PUNO", FACULTAD: "FACULTA DE MEDICINA HUMANA(ALTIPLANO)", ESTADO: "CON INTERNOS", VIGENCIA: "18/07/2028" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", FACULTAD: "FACULTAD DE MEDICINA", ESTADO: "CON INTERNOS", VIGENCIA: "3/10/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", FACULTAD: "FACULTAD DE TECNOLOGIA MEDICA", ESTADO: "CON INTERNOS", VIGENCIA: "11/02/2028" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", FACULTAD: "FACULTAD DE PSICOLOGIA", ESTADO: "SIN INTERNOS", VIGENCIA: "29/05/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", FACULTAD: "FACULTAD DE CIENCIAS SOCIALES", ESTADO: "SIN INTERNOS", VIGENCIA: "21/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL FEDERICO VILLAREAL", FACULTAD: "FACULTAD DE CIENCIAS NATURALES Y MATEMATICAS", ESTADO: "SIN INTERNOS", VIGENCIA: "3/11/2025" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL HERMILIO VALDIZAN", FACULTAD: "FACULTAD DE MEDICINA", ESTADO: "CON INTERNOS", VIGENCIA: "3/11/2025" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", FACULTAD: "FACULTAD DE MEDICINA", ESTADO: "CON INTERNOS", VIGENCIA: "15/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", FACULTAD: "FACULTAD DE ODONTOLOGÍA", ESTADO: "CON INTERNOS", VIGENCIA: "10/02/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", FACULTAD: "FACULTAD DE PSICOLOGIA(SAN MARCOS)", ESTADO: "VENCIDO CON INTERNOS", VIGENCIA: "24/08/2024" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", FACULTAD: "FACULTAD DE CIENCIAS BIOLOGICAS", ESTADO: "VENCIDO CON INTERNOS", VIGENCIA: "11/08/2025" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", FACULTAD: "FACULTAD DE MEDICINA(Segun Especialidad Profesional en Enfermería)", ESTADO: "SIN INTERNOS", VIGENCIA: "10/02/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS", FACULTAD: "FACULTAD DE FARMACIA Y BIOQUIMICA", ESTADO: "SIN INTERNOS", VIGENCIA: "20/08/2025" },
+            { UNIVERSIDAD: "UNIVERSIDAD PERUANA CAYETANO HEREDIA", FACULTAD: "FACULTADES DE MEDICINA HUMANA, ESTOMATOLOGIA Y ENFERMERIA", ESTADO: "CON INTERNOS", VIGENCIA: "19/02/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD PERUANA CAYETANO HEREDIA", FACULTAD: "FACULTAD DE EDUCACION, DE SALUD PUBLICA Y ADMINISTRACION Y DE PSICOLOGIA", ESTADO: "SIN INTERNOS", VIGENCIA: "5/05/2024" },
+            { UNIVERSIDAD: "UNIVERSIDAD PERUANA UNION", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "15/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD PRIVADA DEL NORTE S.A.C.", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "27/02/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD PRIVADA NORBERT WIENER", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "10/02/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD PRIVADA NORBERT WIENER", FACULTAD: "FACULTAD DE FARMACIA Y BIOQUIMICA", ESTADO: "SIN INTERNOS", VIGENCIA: "15/03/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD RICARDO PALMA", FACULTAD: "FACULTAD DE MEDICINA", ESTADO: "CON INTERNOS", VIGENCIA: "15/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD SAN JUAN BAUTISTA S.A.C.", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "21/11/2027" },
+            { UNIVERSIDAD: "UNIVERSIDAD SAN MARTIN DE PORRES", FACULTAD: "FACULTAD DE OBSTETRICIA Y ENFERMERIA", ESTADO: "VENCIDO CON INTERNOS", VIGENCIA: "12/07/2025" },
+            { UNIVERSIDAD: "UNIVERSIDAD SAN MARTIN DE PORRES", FACULTAD: "FACULTAD DE MEDICINA HUMANA", ESTADO: "EN PROCESO DE RENOVACIÓN CON INTERNOS", VIGENCIA: "10/03/2024" },
+            { UNIVERSIDAD: "UNIVERSIDAD SAN MARTIN DE PORRES", FACULTAD: "FACULTAD DE COMUNICACIÓN, TURISMO Y PSICOLOGIA", ESTADO: "CON INTERNOS", VIGENCIA: "28/11/2026" },
+            { UNIVERSIDAD: "UNIVERSIDAD TECNOLÓGICA DEL PERÚ", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "21/07/2026" },
+        ];
+
+        let myChartInstance = null;
+
+        function mostrarTabla(estado) {
+            const detalleTabla = document.getElementById("detalleTabla");
+            const listItems = document.querySelectorAll('#data-list li');
+            listItems.forEach(item => {
+                item.classList.remove('list-item-pulse');
+            });
+            const selectedItem = document.querySelector(`li[onclick*="${estado}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('list-item-pulse');
+            }
+
+            const estadoCompleto = estado === 'EN PROCESO DE RENOVACIÓN' ? 'EN PROCESO DE RENOVACIÓN CON INTERNOS' : estado;
+            const filtrados = datos.filter((d) => d.ESTADO === estadoCompleto);
+
+            const estadoClassMap = {
+                'CON INTERNOS': 'con-internos',
+                'SIN INTERNOS': 'sin-internos',
+                'VENCIDO CON INTERNOS': 'vencido',
+                'EN PROCESO DE RENOVACIÓN CON INTERNOS': 'en-proceso'
+            };
+            const filaClass = estadoClassMap[estadoCompleto];
+            const agrupado = filtrados.reduce((acc, current) => {
+                const universidad = current.UNIVERSIDAD;
+                if (!acc[universidad]) {
+                    acc[universidad] = [];
+                }
+                acc[universidad].push(current);
+                return acc;
+            }, {});
+            let tabla = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>UNIVERSIDAD</th>
+                            <th>FACULTAD</th>
+                            <th>VIGENCIA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            for (const universidad in agrupado) {
+                const facultades = agrupado[universidad];
+                if (facultades.length > 1) {
+                    tabla += `
+                        <tr class="grouped-university-header">
+                            <td rowspan="${facultades.length}">${universidad}</td>
+                            <td>${facultades[0].FACULTAD}</td>
+                            <td>${facultades[0].VIGENCIA || "N/A"}</td>
+                        </tr>
+                    `;
+                    for (let i = 1; i < facultades.length; i++) {
+                        tabla += `
+                            <tr class="grouped-university-row fade-in" style="animation-delay: ${i * 0.1}s;">
+                                <td>${facultades[i].FACULTAD}</td>
+                                <td>${facultades[i].VIGENCIA || "N/A"}</td>
+                            </tr>
+                        `;
+                    }
+                } else {
+                    tabla += `
+                        <tr class="${filaClass} fade-in">
+                            <td>${facultades[0].UNIVERSIDAD}</td>
+                            <td>${facultades[0].FACULTAD}</td>
+                            <td>${facultades[0].VIGENCIA || "N/A"}</td>
+                        </tr>
+                    `;
+                }
+            }
+
+            tabla += "</tbody></table>";
+            document.getElementById("detalleTabla").innerHTML = tabla;
+            detalleTabla.classList.add('active');
+
+            // Resaltar la barra del gráfico según el estado seleccionado
+            resaltarBarra(estado);
+        }
+
+        function resaltarBarra(estadoSeleccionado) {
+            const datasetIndexMap = {
+                'CON INTERNOS': 3,
+                'SIN INTERNOS': 2,
+                'VENCIDO CON INTERNOS': 1,
+                'EN PROCESO DE RENOVACIÓN': 0
+            };
+
+            const index = datasetIndexMap[estadoSeleccionado];
+            const meta = myChartInstance.getDatasetMeta(index);
+            const bar = meta.data[0];
+
+            // Restablecer bordes de todas las barras
+            myChartInstance.data.datasets.forEach((dataset, i) => {
+                myChartInstance.getDatasetMeta(i).data.forEach((barElement) => {
+                    barElement.options.borderWidth = 0;
+                });
+            });
+
+            // Resaltar la barra seleccionada
+            bar.options.borderWidth = 3;
+            bar.options.borderColor = 'black';
+
+            myChartInstance.update();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById("myChart").getContext("2d");
+            myChartInstance = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["Convenios"],
+                    datasets: [
+                        {
+                            label: "En Proceso de Renovación",
+                            data: [2],
+                            backgroundColor: "#f1c40f",
+                            borderWidth: 0,
+                            minBarLength: 15,
+                        },
+                        {
+                            label: "Vencido con Internos",
+                            data: [3],
+                            backgroundColor: "#e74c3c",
+                            borderWidth: 0,
+                            minBarLength: 15,
+                        },
+                        {
+                            label: "Sin Internos",
+                            data: [10],
+                            backgroundColor: "#3498db",
+                            borderWidth: 0,
+                        },
+                        {
+                            label: "Con Internos",
+                            data: [24],
+                            backgroundColor: "#9b59b6",
+                            borderWidth: 0,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                        },
+                        tooltip: {
+                            enabled: false,
+                        },
+                        datalabels: {
+                            color: "#fff",
+                            anchor: "center",
+                            align: "center",
+                            formatter: (value) => value,
+                            font: {
+                                weight: "bold",
+                                size: 16,
+                            },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            barPercentage: 0.1,
+                            categoryPercentage: 0.1,
+                            grid: {
+                                display: false,
+                            },
+                            ticks: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            display: false,
+                            grid: {
+                                display: false
+                            }
+                        },
+                    },
+                },
+                plugins: [ChartDataLabels],
+            });
+        });
+    </script>
+</body>
+</html>
