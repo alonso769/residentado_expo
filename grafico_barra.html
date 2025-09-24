@@ -186,8 +186,7 @@
                 <h2 style="color: #2980b9;">Detallado</h2>
                 <ul id="data-list">
                     <li onclick="mostrarTabla('ENVIARON')" class="enviaron">Enviaron <span>72</span></li>
-                    <li onclick="mostrarTabla('LLENADO CON LO DEL 2025')" class="llenado">Llenado con info 2025 <span>5</span></li>
-                    <li onclick="mostrarTabla('NO ENVIARON')" class="no-enviaron">No enviaron <span>5</span></li>
+                    <li onclick="mostrarTabla('NO ENVIARON')" class="no-enviaron">No enviaron <span>10</span></li>
                     <li onclick="mostrarTabla('CERRADO')" class="cerrado">Cerrado <span>1</span></li>
                     <li onclick="mostrarTabla('NO REENVIARON CORRECIONES')" class="no-reenviaron-correcciones">No reenviaron correcciones <span>1</span></li>
                 </ul>
@@ -230,8 +229,8 @@
             { RIS: "RIS 5", EESS: "CS LA HUAYRONA", ESTADO: "ENVIARON" },
             { RIS: "RIS 5", EESS: "CS LA LIBERTAD", ESTADO: "ENVIARON" },
             { RIS: "RIS 3", EESS: "CS LINCE", ESTADO: "ENVIARON" },
-            { RIS: "RIS 5", EESS: "CS MANGOMARCA", ESTADO: "LLENADO CON LO DEL 2025" },
-            { RIS: "RIS 4", EESS: "CS MAX ARIAS SCHREIBER", ESTADO: "LLENADO CON LO DEL 2025" },
+            { RIS: "RIS 5", EESS: "CS MANGOMARCA", ESTADO: "NO ENVIARON" },
+            { RIS: "RIS 4", EESS: "CS MAX ARIAS SCHREIBER", ESTADO: "NO ENVIARON" },
             { RIS: "RIS 6", EESS: "CS MEDALLA MILAGROSA", ESTADO: "ENVIARON" },
             { RIS: "RIS 1", EESS: "CS MIRONES", ESTADO: "ENVIARON" },
             { RIS: "RIS 1", EESS: "CS MIRONES BAJO", ESTADO: "ENVIARON" },
@@ -258,11 +257,11 @@
             { RIS: "RIS 5", EESS: "CSMC JAVIER MARIATEGUI", ESTADO: "ENVIARON" },
             { RIS: "RIS 2", EESS: "CSMC JESUS MARIA", ESTADO: "ENVIARON" },
             { RIS: "RIS 1", EESS: "CSMC KUYANAKUSUN", ESTADO: "CERRADO" },
-            { RIS: "RIS 4", EESS: "CSMC LA VICTORIA", ESTADO: "LLENADO CON LO DEL 2025" },
+            { RIS: "RIS 4", EESS: "CSMC LA VICTORIA", ESTADO: "NO ENVIARON" },
             { RIS: "RIS 2", EESS: "CSMC MAGDALENA", ESTADO: "NO ENVIARON" },
             { RIS: "RIS 5", EESS: "CSMC MANGOMARCA", ESTADO: "ENVIARON" },
             { RIS: "RIS 1", EESS: "CSMC MIRONES BAJO", ESTADO: "ENVIARON" },
-            { RIS: "RIS 6", EESS: "CSMC NUEVO PERÚ", ESTADO: "LLENADO CON LO DEL 2025" },
+            { RIS: "RIS 6", EESS: "CSMC NUEVO PERÚ", ESTADO: "NO ENVIARON" },
             { RIS: "RIS 3", EESS: "CSMC SAN BORJA", ESTADO: "ENVIARON" },
             { RIS: "RIS 4", EESS: "CSMC SAN COSME", ESTADO: "ENVIARON" },
             { RIS: "RIS 3", EESS: "CSMC SAN ISIDRO", ESTADO: "NO ENVIARON" },
@@ -272,7 +271,7 @@
             { RIS: "RIS 4", EESS: "CSMI EL PORVENIR", ESTADO: "ENVIARON" },
             { RIS: "RIS 2", EESS: "CSMI MAGDALENA", ESTADO: "ENVIARON" },
             { RIS: "RIS 3", EESS: "CSMI SURQUILLO", ESTADO: "ENVIARON" },
-            { RIS: "RIS 2", EESS: "LABORATORIO REFERENCIAL", ESTADO: "LLENADO CON LO DEL 2025" },
+            { RIS: "RIS 2", EESS: "LABORATORIO REFERENCIAL", ESTADO: "NO ENVIARON" },
             { RIS: "RIS 5", EESS: "PS 15 DE ENERO", ESTADO: "ENVIARON" },
             { RIS: "RIS 6", EESS: "PS AYACUCHO", ESTADO: "ENVIARON" },
             { RIS: "RIS 5", EESS: "PS AZCARRUNZ ALTO", ESTADO: "ENVIARON" },
@@ -296,7 +295,6 @@
 
             const estadoClassMap = {
                 'ENVIARON': 'enviaron',
-                'LLENADO CON LO DEL 2025': 'llenado',
                 'NO ENVIARON': 'no-enviaron',
                 'CERRADO': 'cerrado',
                 'NO REENVIARON CORRECIONES': 'no-reenviaron-correcciones'
@@ -380,11 +378,7 @@
                             data: [5],
                             backgroundColor: "#3498db",
                         },
-                        {
-                            label: "Llenado con info 2025",
-                            data: [5],
-                            backgroundColor: "#1abc9c",
-                        },
+                      
                         {
                             label: "Enviaron",
                             data: [72],
