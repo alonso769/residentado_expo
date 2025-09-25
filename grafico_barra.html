@@ -186,7 +186,7 @@
                 <h2 style="color: #2980b9;">Detallado</h2>
                 <ul id="data-list">
                     <li onclick="mostrarTabla('ENVIARON')" class="enviaron">Enviaron <span>72</span></li>
-                    <li onclick="mostrarTabla('NO ENVIARON')" class="no-enviaron">No enviaron <span>10</span></li>
+                    <li onclick="mostrarTabla('NO ENVIARON')" class="no-enviaron">No enviaron <span>12</span></li>
                     <li onclick="mostrarTabla('CERRADO')" class="cerrado">Cerrado <span>1</span></li>
                     <li onclick="mostrarTabla('NO REENVIARON CORRECIONES')" class="no-reenviaron-correcciones">No reenviaron correcciones <span>1</span></li>
                 </ul>
@@ -277,7 +277,7 @@
             { RIS: "RIS 5", EESS: "PS AZCARRUNZ ALTO", ESTADO: "ENVIARON" },
             { RIS: "RIS 7", EESS: "PS CESAR VALLEJO", ESTADO: "NO ENVIARON" },
             { RIS: "RIS 4", EESS: "PS EL PINO", ESTADO: "ENVIARON" },
-            { RIS: "RIS 4", EESS: "PS JARDIN SANTA ROSA", ESTADO: "ENVIARON" },
+            { RIS: "RIS 4", EESS: "PS JARDIN SANTA ROSA", ESTADO: "NO ENVIARON" },
             { RIS: "RIS 7", EESS: "PS JOSE CARLOS MARIATEGUI V ETAPA", ESTADO: "NO ENVIARON" },
             { RIS: "RIS 7", EESS: "PS MARISCAL CACERES", ESTADO: "NO REENVIARON CORRECIONES" },
             { RIS: "RIS 1", EESS: "PS PALERMO", ESTADO: "NO ENVIARON" },
@@ -286,7 +286,7 @@
             { RIS: "RIS 6", EESS: "PS SAGRADA FAMILIA", ESTADO: "ENVIARON" },
             { RIS: "RIS 4", EESS: "PS SAN JUAN MASIAS", ESTADO: "ENVIARON" },
             { RIS: "RIS 1", EESS: "PS SANTA ROSA", ESTADO: "ENVIARON" },
-            { RIS: "RIS 7", EESS: "PS TUPAC AMARU II", ESTADO: "ENVIARON" },
+            { RIS: "RIS 7", EESS: "PS TUPAC AMARU II", ESTADO: "NO ENVIARON" },
         ];
         
         function mostrarTabla(estado) {
@@ -375,7 +375,7 @@
                         },
                         {
                             label: "No enviaron",
-                            data: [5],
+                            data: [12],
                             backgroundColor: "#3498db",
                         },
                       
