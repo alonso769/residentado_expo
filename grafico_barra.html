@@ -3,206 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Establecimientos</title>
+    <title>Establecimientos de Salud - Dashboard Profesional</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #0f172a;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --accent-env: #6366f1; /* Indigo */
+            --accent-no: #0ea5e9;  /* Sky */
+            --accent-cerr: #f59e0b; /* Amber */
+            --accent-corr: #ef4444; /* Red */
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fa;
-            padding: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
             height: 100vh;
             overflow: hidden;
         }
-        .container {
-            display: flex;
-            gap: 20px;
-            height: calc(100vh - 20px);
-            width: 100%;
-        }
-        .chart-card, .data-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+
+        /* Sidebar Navegación */
+        .sidebar {
+            width: 250px;
+            background: var(--primary);
+            color: white;
+            padding: 30px 20px;
             display: flex;
             flex-direction: column;
-            height: 100%;
-            min-width: 0;
+            gap: 12px;
         }
-        .chart-card {
-            flex: 2;
-        }
-        .data-card {
-            flex: 1.5;
-        }
-        .data-content {
+
+        .sidebar h1 { font-size: 1.3rem; margin-bottom: 40px; font-weight: 800; letter-spacing: -1px; }
+
+        .nav-link {
+            text-decoration: none;
+            color: #94a3b8;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s;
             display: flex;
-            flex-direction: column;
-            height: 100%;
+            align-items: center;
+            gap: 12px;
         }
-        .table-and-summary {
-            display: flex;
-            flex-direction: row;
-            gap: 10px;
-            height: calc(100% - 150px);
-        }
-        .table-container {
+
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+
+        /* Area Principal */
+        .main-content {
             flex: 1;
+            padding: 30px;
             overflow-y: auto;
-            border-top: 2px solid #2980b9;
-            padding-top: 10px;
-            min-width: 0;
-        }
-        .summary-container {
-            flex: 0.8;
-            overflow-y: auto;
-            border-top: 2px solid #e74c3c;
-            padding-top: 10px;
-            min-width: 0;
-        }
-        h2, h3 {
-            text-align: center;
-            margin: 5px 0;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        ul li {
             display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            font-size: 16px;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* KPIs Superiores */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .kpi-card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: transform 0.2s, border-color 0.2s;
+            border: 1px solid transparent;
         }
-        ul li:hover {
-            opacity: 0.8;
+
+        .kpi-card:hover { transform: translateY(-4px); border-color: #e2e8f0; }
+        .kpi-card span { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+        .kpi-card h2 { margin: 8px 0 0 0; font-size: 2rem; font-weight: 800; }
+
+        /* Grid de Datos */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+            flex: 1;
+            min-height: 500px;
         }
-        ul li span {
-            font-weight: bold;
-            color: #2c3e50;
+
+        .panel-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
         }
-        table {
+
+        .search-bar {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 14px;
             width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
+            margin-bottom: 20px;
+            font-family: inherit;
+            box-sizing: border-box;
         }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        table th {
-            background: #2980b9;
-            color: #fff;
-            position: sticky;
-            top: 0;
-        }
-        canvas {
-            flex-grow: 1;
-            min-height: 0;
-        }
-        #chart-canvas-container {
-            width: 100%;
-            height: 100%;
-            max-width: 300px;
-            margin: auto;
-        }
-        /* Estilos para la lista de "Detalles de la Data" y las filas de la tabla */
-        .enviaron { background-color: #9b59b6; color: #fff; }
-        .llenado { background-color: #1abc9c; color: #fff; }
-        .no-enviaron { background-color: #3498db; color: #fff; }
-        .cerrado { background-color: #f1c40f; color: #fff; }
-        .no-reenviaron-correcciones { background-color: #e74c3c; color: #fff; }
-        .enviaron td, .llenado td, .no-enviaron td, .cerrado td, .no-reenviaron-correcciones td {
-            background-color: inherit;
-            color: inherit;
-        }
-        .chart-with-buttons {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 30px;
-  }
 
-  .nav-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
+        /* Tablas Estilizadas */
+        .table-scroll { flex: 1; overflow-y: auto; border-radius: 12px; border: 1px solid #f1f5f9; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #f8fafc; padding: 14px; text-align: left; position: sticky; top: 0; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid #f1f5f9; }
+        td { padding: 12px 14px; border-bottom: 1px solid #f8fafc; }
+        tr:hover { background: #fdfdfd; }
 
-  .nav-buttons a {
-    text-decoration: none;
-    background: #2980b9;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-    text-align: center;
-    min-width: 200px;
-  }
-
-  .nav-buttons a:hover {
-    background: #1f6391;
-    transform: translateY(-2px);
-  }
-
-  #camposClinicosChart {
-    flex-grow: 1;
-  }
+        .badge { padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; }
+        
+        .chart-box { height: 320px; width: 100%; position: relative; margin: auto; }
     </style>
 </head>
 <body>
-    <div class="chart-container">
-  <div class="chart-with-buttons">
-    <!-- 🔹 Botones a la izquierda -->
-    <div class="nav-buttons">
-      <a href="convenios.html">Convenios por Universidad</a>
-      <a href="campos_clinicos.html">N° Campos de Cinicos por Carrera</a>
-      <a href="https://app.powerbi.com/view?r=eyJrIjoiOTBlZWNjMTctYWY5YS00YmQ2LWE3NzktYWU0ZDg3YTMzYTVhIiwidCI6Ijk4MzIyM2QxLTE5N2QtNDAwYS04ZDVhLTE4ZWQ5ZTU5YjMzYyIsImMiOjR9" target="_blank">
-        Residentado
-      </a>
-    </div>
-    <div class="container">
-        <div class="chart-card">
-            <h2>ESTABLECIMIENTOS DE SALUD CON INFORMACION DE CAMPOS CLINICOS</h2>
-            <h3>Distribución de 84 establecimientos</h3>
-            <div id="chart-canvas-container">
-                <canvas id="myChart"></canvas>
+
+    <aside class="sidebar">
+        <h1>SIS-Gestión</h1>
+        <nav>
+            <a href="#" class="nav-link">📋 Universidades</a>
+            <a href="#" class="nav-link active">🏥 Establecimientos (EESS)</a>
+            <a href="#" class="nav-link">📊 Campos por Carrera</a>
+            <a href="#" class="nav-link">📑 Reportes Mensuales</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="kpi-row">
+            <div class="kpi-card" onclick="filtrar('ENVIARON')">
+                <span>Enviaron Información</span>
+                <h2 style="color: var(--accent-env)">76</h2>
             </div>
-           
-            
+            <div class="kpi-card" onclick="filtrar('NO ENVIARON')">
+                <span>Pendientes de Envío</span>
+                <h2 style="color: var(--accent-no)">6</h2>
+            </div>
+            <div class="kpi-card" onclick="filtrar('CERRADO')">
+                <span>Establecimientos Cerrados</span>
+                <h2 style="color: var(--accent-cerr)">1</h2>
+            </div>
+            <div class="kpi-card" onclick="filtrar('NO REENVIARON CORRECIONES')">
+                <span>Sin Subsanar</span>
+                <h2 style="color: var(--accent-corr)">1</h2>
+            </div>
         </div>
 
-        <div class="data-card">
-            <div class="data-content">
-                <h2 style="color: #2980b9;">Detallado</h2>
-                <ul id="data-list">
-                    <li onclick="mostrarTabla('ENVIARON')" class="enviaron">Enviaron <span>76</span></li>
-                    <li onclick="mostrarTabla('NO ENVIARON')" class="no-enviaron">No enviaron <span>6</span></li>
-                    <li onclick="mostrarTabla('CERRADO')" class="cerrado">Cerrado <span>1</span></li>
-                    <li onclick="mostrarTabla('NO REENVIARON CORRECIONES')" class="no-reenviaron-correcciones">No reenviaron correcciones <span>1</span></li>
-                </ul>
-                <div class="table-and-summary">
-                    <div class="table-container" id="detalleTabla">
-                        </div>
-                    <div class="summary-container" id="resumenRIS">
-                        <h3 style="color: #e74c3c;">Resumen por RIS</h3>
-                        </div>
+        <div class="dashboard-grid">
+            <div class="panel-card">
+                <h3 style="margin: 0 0 20px 0; font-size: 1rem; color: var(--text-muted)">Distribución de 84 EESS</h3>
+                <div class="chart-box">
+                    <canvas id="donaChart"></canvas>
+                </div>
+                <div style="margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+                    <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Haga clic en una categoría arriba para filtrar el listado.</p>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <h3 id="tituloTabla" style="margin:0; font-size: 1.1rem;">EESS: ENVIARON</h3>
+                    <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar establecimiento..." style="max-width: 300px; margin-bottom:0">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; flex: 1; min-height: 0; margin-top: 20px;">
+                    <div class="table-scroll">
+                        <table id="tablaEESS">
+                            <thead><tr><th>RIS</th><th>NOMBRE DEL ESTABLECIMIENTO</th></tr></thead>
+                            <tbody id="bodyEESS"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-scroll">
+                        <table id="tablaRIS">
+                            <thead><tr><th>RIS</th><th>CANTIDAD</th></tr></thead>
+                            <tbody id="bodyRIS"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <script>
-        const datos = [
+<script>
+   const datos = [
             { RIS: "RIS 7", EESS: "CS 10 DE OCTUBRE", ESTADO: "ENVIARON" },
             { RIS: "RIS 6", EESS: "CS BAYOVAR", ESTADO: "ENVIARON" },
             { RIS: "RIS 2", EESS: "CS BREÑA", ESTADO: "ENVIARON" },
@@ -288,150 +285,63 @@
             { RIS: "RIS 1", EESS: "PS SANTA ROSA", ESTADO: "ENVIARON" },
             { RIS: "RIS 7", EESS: "PS TUPAC AMARU II", ESTADO: "NO ENVIARON" },
         ];
-        
-        function mostrarTabla(estado) {
-            const filtrados = datos.filter((d) => d.ESTADO === estado);
-            filtrados.sort((a, b) => a.RIS.localeCompare(b.RIS));
+    let filtroActual = 'ENVIARON';
 
-            const estadoClassMap = {
-                'ENVIARON': 'enviaron',
-                'NO ENVIARON': 'no-enviaron',
-                'CERRADO': 'cerrado',
-                'NO REENVIARON CORRECIONES': 'no-reenviaron-correcciones'
-            };
-            const filaClass = estadoClassMap[estado];
+    function renderizar(busqueda = '') {
+        const bodyEESS = document.getElementById("bodyEESS");
+        const bodyRIS = document.getElementById("bodyRIS");
+        document.getElementById("tituloTabla").innerText = `EESS: ${filtroActual}`;
 
-            let tabla = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>RIS</th>
-                            <th>EESS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            filtrados.forEach((d) => {
-                tabla += `
-                    <tr class="${filaClass}">
-                        <td>${d.RIS}</td>
-                        <td>${d.EESS}</td>
-                    </tr>
-                `;
-            });
-            tabla += "</tbody></table>";
-            document.getElementById("detalleTabla").innerHTML = tabla;
+        const filtrados = datos.filter(d => 
+            d.ESTADO === filtroActual && 
+            d.EESS.toLowerCase().includes(busqueda.toLowerCase())
+        ).sort((a,b) => a.RIS.localeCompare(b.RIS));
 
-            const resumen = {};
-            filtrados.forEach((d) => {
-                if (!resumen[d.RIS]) {
-                    resumen[d.RIS] = 0;
+        // Render Detalle
+        bodyEESS.innerHTML = filtrados.map(d => `
+            <tr><td><span class="badge" style="background: #eff6ff; color: #3b82f6;">${d.RIS}</span></td><td><strong>${d.EESS}</strong></td></tr>
+        `).join('');
+
+        // Render Resumen por RIS
+        const resumen = filtrados.reduce((acc, c) => { acc[c.RIS] = (acc[c.RIS] || 0) + 1; return acc; }, {});
+        bodyRIS.innerHTML = Object.keys(resumen).sort().map(ris => `
+            <tr><td>${ris}</td><td style="font-weight:700">${resumen[ris]}</td></tr>
+        `).join('');
+    }
+
+    function filtrar(estado) {
+        filtroActual = estado;
+        renderizar();
+    }
+
+    document.getElementById('buscador').addEventListener('input', (e) => renderizar(e.target.value));
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById("donaChart").getContext("2d");
+        new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: ["Enviaron", "No Enviaron", "Cerrado", "Sin Corrección"],
+                datasets: [{
+                    data: [76, 6, 1, 1],
+                    backgroundColor: ["#6366f1", "#0ea5e9", "#f59e0b", "#ef4444"],
+                    hoverOffset: 20,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '78%',
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { family: 'Plus Jakarta Sans', size: 12 } } },
+                    datalabels: { color: '#1e293b', font: { weight: 'bold' } }
                 }
-                resumen[d.RIS]++;
-            });
-
-            let resumenTabla = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>RIS</th>
-                            <th>Cantidad</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            const sortedRisKeys = Object.keys(resumen).sort();
-            sortedRisKeys.forEach(ris => {
-                resumenTabla += `
-                    <tr class="${filaClass}">
-                        <td>${ris}</td>
-                        <td>${resumen[ris]}</td>
-                    </tr>
-                `;
-            });
-            resumenTabla += "</tbody></table>";
-            document.getElementById("resumenRIS").innerHTML = resumenTabla;
-        }
-
-        // Script para inicializar el gráfico
-        document.addEventListener('DOMContentLoaded', () => {
-            const ctx = document.getElementById("myChart").getContext("2d");
-            new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: ["Establecimientos"],
-                    datasets: [
-                        {
-                            label: "No reenviaron correcciones",
-                            data: [1],
-                            backgroundColor: "#e74c3c",
-                            minBarLength: 15,
-                        },
-                        {
-                            label: "Cerrado",
-                            data: [1],
-                            backgroundColor: "#f1c40f",
-                            minBarLength: 15,
-                        },
-                        {
-                            label: "No enviaron",
-                            data: [10],
-                            backgroundColor: "#3498db",
-                        },
-                      
-                        {
-                            label: "Enviaron",
-                            data: [74],
-                            backgroundColor: "#9b59b6",
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                        },
-                        tooltip: {
-                            enabled: false,
-                        },
-                        datalabels: {
-                            color: "#fff",
-                            anchor: "center",
-                            align: "center",
-                            formatter: (value) => value,
-                            font: {
-                                weight: "bold",
-                                size: 16,
-                            },
-                        },
-                    },
-                    scales: {
-                        x: {
-                            stacked: true,
-                            barPercentage: 0.1,
-                            categoryPercentage: 0.1,
-                            grid: {
-                                display: false,
-                            },
-                            ticks: {
-                                display: false
-                            }
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            display: false,
-                            grid: {
-                                display: false
-                            }
-                        },
-                    },
-                },
-                plugins: [ChartDataLabels],
-            });
+            },
+            plugins: [ChartDataLabels]
         });
-    </script>
+        renderizar();
+    });
+</script>
 </body>
 </html>

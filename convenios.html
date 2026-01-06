@@ -3,225 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Universidades</title>
+    <title>SIS-Gestión Premium</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --con: #8b5cf6;
+            --sin: #0ea5e9;
+            --vencido: #ef4444;
+            --proceso: #f59e0b;
+        }
+
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fa;
-            padding: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            display: flex;
             height: 100vh;
             overflow: hidden;
         }
-        .container {
-            display: flex;
-            gap: 20px;
-            height: calc(100vh - 20px);
-            width: 100%;
-        }
-        .chart-card, .data-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--primary);
+            color: white;
             display: flex;
             flex-direction: column;
-            height: 100%;
-            min-width: 0;
+            padding: 24px;
+            gap: 8px;
         }
-        .chart-card {
-            flex: 2;
+
+        .sidebar h1 { font-size: 1.2rem; margin-bottom: 30px; font-weight: 700; letter-spacing: -0.5px; }
+        
+        .nav-link {
+            text-decoration: none;
+            color: #94a3b8;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .data-card {
-            flex: 1.5;
+
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 32px;
             overflow-y: auto;
-        }
-        .data-content {
             display: flex;
             flex-direction: column;
-            height: 100%;
+            gap: 24px;
         }
+
+        .header-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-bottom: 4px solid transparent;
+        }
+
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card h4 { margin: 0; font-size: 0.8rem; color: #64748b; text-transform: uppercase; }
+        .stat-card .value { font-size: 1.8rem; font-weight: 700; margin: 8px 0 0 0; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+            flex: 1;
+            min-height: 500px;
+        }
+
+        .panel {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Buscador */
+        .search-box {
+            margin-bottom: 16px;
+            padding: 10px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        /* Tabla */
         .table-container {
             flex: 1;
             overflow-y: auto;
-            border-top: 2px solid #2980b9;
-            padding-top: 10px;
-            min-width: 0;
-            margin-top: 20px;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.6s ease-in-out, opacity 0.6s ease-in-out, padding 0.6s ease-in-out;
+            border: 1px solid #f1f5f9;
+            border-radius: 12px;
         }
-        .table-container.active {
-            max-height: 65vh;
-            opacity: 1;
-            padding-top: 10px;
-        }
-        h2, h3 {
-            text-align: center;
-            margin: 5px 0;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        ul li {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-        }
-        ul li:hover {
-            opacity: 0.8;
-            transform: scale(1.01);
-        }
-        ul li span {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            table-layout: fixed;
-        }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            word-wrap: break-word;
-        }
-        table th {
-            background: #2980b9;
-            color: #fff;
-            position: sticky;
-            top: 0;
-        }
-        canvas {
-            flex-grow: 1;
-            min-height: 0;
-        }
-        #chart-canvas-container {
-            width: 100%;
-            height: 100%;
-            max-width: 300px;
-            margin: auto;
-        }
-        /* Estilos para la lista y las filas de la tabla */
-        .con-internos { border-left: 4px solid #9b59b6; }
-        .sin-internos { border-left: 4px solid #3498db; }
-        .vencido { border-left: 4px solid #e74c3c; }
-        .en-proceso { border-left: 4px solid #f1c40f; }
-        /* Efecto de pulso en el hover */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-        }
-        table tbody tr:hover {
-            animation: pulse 0.5s ease-in-out;
-            cursor: pointer;
-        }
-        /* Efecto de desglose para cada fila */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        /* Barra de desplazamiento personalizada */
-        .table-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .table-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        .table-container::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        .table-container::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        .chart-with-buttons {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 30px;
-  }
 
-  .nav-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #f8fafc; padding: 14px; text-align: left; position: sticky; top: 0; color: #64748b; font-weight: 600; }
+        td { padding: 14px; border-bottom: 1px solid #f1f5f9; }
+        tr:hover { background: #f8fafc; }
 
-  .nav-buttons a {
-    text-decoration: none;
-    background: #2980b9;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-    text-align: center;
-    min-width: 200px;
-  }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
 
-  .nav-buttons a:hover {
-    background: #1f6391;
-    transform: translateY(-2px);
-  }
+        .chart-container { position: relative; height: 300px; width: 100%; }
 
-  #camposClinicosChart {
-    flex-grow: 1;
-  }
+        /* Estilos específicos por estado */
+        .card-con { border-color: var(--con); }
+        .card-sin { border-color: var(--sin); }
+        .card-vencido { border-color: var(--vencido); }
+        .card-proceso { border-color: var(--proceso); }
     </style>
 </head>
 <body>
-        <div class="chart-container">
-  <div class="chart-with-buttons">
-    <!-- 🔹 Botones a la izquierda -->
-    <div class="nav-buttons">
-      <a href="campos_clinicos.html">N° Campos de Cinicos por Carrera</a>
-      <a href="grafico_barra.html">Campos de Formación</a>
-      <a href="https://app.powerbi.com/view?r=eyJrIjoiOTBlZWNjMTctYWY5YS00YmQ2LWE3NzktYWU0ZDg3YTMzYTVhIiwidCI6Ijk4MzIyM2QxLTE5N2QtNDAwYS04ZDVhLTE4ZWQ5ZTU5YjMzYyIsImMiOjR9" target="_blank">
-        Residentado
-      </a>
-    </div>
-    <div class="container">
-        <div class="chart-card">
-            <h2>DISTRIBUCIÓN DE CONVENIOS DE UNIVERSIDADES</h2>
-            <h3>Distribución de 39 convenios</h3>
-            <div id="chart-canvas-container">
-                <canvas id="myChart"></canvas>
+
+    <aside class="sidebar">
+        <h1>SIS-Gestión</h1>
+        <nav>
+            <a href="#" class="nav-link active">📊 Dashboard Convenios</a>
+            <a href="#" class="nav-link">🏫 Campos Clínicos</a>
+            <a href="#" class="nav-link">👨‍⚕️ Residentado</a>
+            <a href="#" class="nav-link">📄 Reportes</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="header-stats">
+            <div class="stat-card card-con" onclick="filtrar('CON INTERNOS')">
+                <h4>Con Internos</h4>
+                <p class="value" style="color:var(--con)">24</p>
             </div>
-          
-        </div>
-        <div class="data-card">
-            <div class="data-content">
-                <h2 style="color: #2980b9;">Detallado por Universida - Facultad - Vigencia</h2>
-                <ul id="data-list">
-                    <li onclick="mostrarTabla('CON INTERNOS')" class="con-internos">Con Internos <span>24</span></li>
-                    <li onclick="mostrarTabla('SIN INTERNOS')" class="sin-internos">Sin Internos <span>10</span></li>
-                    <li onclick="mostrarTabla('VENCIDO CON INTERNOS')" class="vencido">Vencido con Internos <span>3</span></li>
-                    <li onclick="mostrarTabla('EN PROCESO DE RENOVACIÓN CON INTERNOS')" class="en-proceso">En Proceso de Renovación <span>2</span></li>
-                </ul>
-                <div class="table-container" id="detalleTabla"></div>
+            <div class="stat-card card-sin" onclick="filtrar('SIN INTERNOS')">
+                <h4>Sin Internos</h4>
+                <p class="value" style="color:var(--sin)">10</p>
+            </div>
+            <div class="stat-card card-vencido" onclick="filtrar('VENCIDO CON INTERNOS')">
+                <h4>Vencidos</h4>
+                <p class="value" style="color:var(--vencido)">3</p>
+            </div>
+            <div class="stat-card card-proceso" onclick="filtrar('EN PROCESO DE RENOVACIÓN CON INTERNOS')">
+                <h4>En Proceso</h4>
+                <p class="value" style="color:var(--proceso)">2</p>
             </div>
         </div>
-    </div>
-    <script>
-        const datos = [
+
+        <div class="dashboard-grid">
+            <div class="panel">
+                <h3 style="margin-top:0">Distribución Global</h3>
+                <div class="chart-container">
+                    <canvas id="convenioChart"></canvas>
+                </div>
+                <p style="text-align: center; color: #64748b; font-size: 0.8rem; margin-top: 20px;">
+                    Total de 39 convenios registrados
+                </p>
+            </div>
+
+            <div class="panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin:0">Listado Detallado</h3>
+                    <input type="text" id="busqueda" class="search-box" placeholder="Buscar universidad..." style="width: 250px; margin:0">
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>UNIVERSIDAD</th>
+                                <th>FACULTAD</th>
+                                <th>VIGENCIA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<script>
+    const datos = [
             { UNIVERSIDAD: "UNIVERSIDAD PERUANA DE CIENCIAS APLICADAS S.A.C.", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "19/11/2027" },
             { UNIVERSIDAD: "UNIVERSIDAD CATOLICA SEDES SAPIENTIAE", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "5/12/2027" },
             { UNIVERSIDAD: "UNIVERSIDAD CÉSAR VALLEJO", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "10/02/2026" },
@@ -263,193 +251,60 @@
             { UNIVERSIDAD: "UNIVERSIDAD TECNOLÓGICA DEL PERÚ", FACULTAD: "FACULTAD DE CIENCIAS DE LA SALUD", ESTADO: "CON INTERNOS", VIGENCIA: "21/07/2026" },
         ];
 
-        let myChartInstance = null;
+    let chart;
+    let filtroActual = 'CON INTERNOS';
 
-        function mostrarTabla(estado) {
-            const detalleTabla = document.getElementById("detalleTabla");
-            const listItems = document.querySelectorAll('#data-list li');
-            listItems.forEach(item => {
-                item.classList.remove('list-item-pulse');
-            });
-            const selectedItem = document.querySelector(`li[onclick*="${estado}"]`);
-            if (selectedItem) {
-                selectedItem.classList.add('list-item-pulse');
-            }
+    function actualizarTabla(busqueda = '') {
+        const body = document.getElementById("tablaBody");
+        const filtrados = datos.filter(d => 
+            d.ESTADO === filtroActual && 
+            d.UNIVERSIDAD.toLowerCase().includes(busqueda.toLowerCase())
+        );
 
-            const estadoCompleto = estado === 'EN PROCESO DE RENOVACIÓN' ? 'EN PROCESO DE RENOVACIÓN CON INTERNOS' : estado;
-            const filtrados = datos.filter((d) => d.ESTADO === estadoCompleto);
+        body.innerHTML = filtrados.map(d => `
+            <tr>
+                <td><strong>${d.UNIVERSIDAD}</strong></td>
+                <td>${d.FACULTAD}</td>
+                <td><span class="badge" style="background:${filtroActual.includes('VENCIDO') ? '#fee2e2' : '#f1f5f9'}; color:${filtroActual.includes('VENCIDO') ? '#ef4444' : '#475569'}">
+                    ${d.VIGENCIA || 'Pendiente'}
+                </span></td>
+            </tr>
+        `).join('');
+    }
 
-            const estadoClassMap = {
-                'CON INTERNOS': 'con-internos',
-                'SIN INTERNOS': 'sin-internos',
-                'VENCIDO CON INTERNOS': 'vencido',
-                'EN PROCESO DE RENOVACIÓN CON INTERNOS': 'en-proceso'
-            };
-            const filaClass = estadoClassMap[estadoCompleto];
-            const agrupado = filtrados.reduce((acc, current) => {
-                const universidad = current.UNIVERSIDAD;
-                if (!acc[universidad]) {
-                    acc[universidad] = [];
+    function filtrar(estado) {
+        filtroActual = estado;
+        actualizarTabla();
+    }
+
+    document.getElementById('busqueda').addEventListener('input', (e) => actualizarTabla(e.target.value));
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById('convenioChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['En Proceso', 'Vencido', 'Sin Internos', 'Con Internos'],
+                datasets: [{
+                    data: [2, 3, 10, 24],
+                    backgroundColor: ['#f59e0b', '#ef4444', '#0ea5e9', '#8b5cf6'],
+                    borderWidth: 0,
+                    hoverOffset: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { family: 'Plus Jakarta Sans', size: 12 } } },
+                    datalabels: { color: '#fff', font: { weight: 'bold' } }
                 }
-                acc[universidad].push(current);
-                return acc;
-            }, {});
-            let tabla = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>UNIVERSIDAD</th>
-                            <th>FACULTAD</th>
-                            <th>VIGENCIA</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            for (const universidad in agrupado) {
-                const facultades = agrupado[universidad];
-                if (facultades.length > 1) {
-                    tabla += `
-                        <tr class="grouped-university-header">
-                            <td rowspan="${facultades.length}">${universidad}</td>
-                            <td>${facultades[0].FACULTAD}</td>
-                            <td>${facultades[0].VIGENCIA || "N/A"}</td>
-                        </tr>
-                    `;
-                    for (let i = 1; i < facultades.length; i++) {
-                        tabla += `
-                            <tr class="grouped-university-row fade-in" style="animation-delay: ${i * 0.1}s;">
-                                <td>${facultades[i].FACULTAD}</td>
-                                <td>${facultades[i].VIGENCIA || "N/A"}</td>
-                            </tr>
-                        `;
-                    }
-                } else {
-                    tabla += `
-                        <tr class="${filaClass} fade-in">
-                            <td>${facultades[0].UNIVERSIDAD}</td>
-                            <td>${facultades[0].FACULTAD}</td>
-                            <td>${facultades[0].VIGENCIA || "N/A"}</td>
-                        </tr>
-                    `;
-                }
-            }
-
-            tabla += "</tbody></table>";
-            document.getElementById("detalleTabla").innerHTML = tabla;
-            detalleTabla.classList.add('active');
-
-            // Resaltar la barra del gráfico según el estado seleccionado
-            resaltarBarra(estado);
-        }
-
-        function resaltarBarra(estadoSeleccionado) {
-            const datasetIndexMap = {
-                'CON INTERNOS': 3,
-                'SIN INTERNOS': 2,
-                'VENCIDO CON INTERNOS': 1,
-                'EN PROCESO DE RENOVACIÓN': 0
-            };
-
-            const index = datasetIndexMap[estadoSeleccionado];
-            const meta = myChartInstance.getDatasetMeta(index);
-            const bar = meta.data[0];
-
-            // Restablecer bordes de todas las barras
-            myChartInstance.data.datasets.forEach((dataset, i) => {
-                myChartInstance.getDatasetMeta(i).data.forEach((barElement) => {
-                    barElement.options.borderWidth = 0;
-                });
-            });
-
-            // Resaltar la barra seleccionada
-            bar.options.borderWidth = 3;
-            bar.options.borderColor = 'black';
-
-            myChartInstance.update();
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const ctx = document.getElementById("myChart").getContext("2d");
-            myChartInstance = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: ["Convenios"],
-                    datasets: [
-                        {
-                            label: "En Proceso de Renovación",
-                            data: [2],
-                            backgroundColor: "#f1c40f",
-                            borderWidth: 0,
-                            minBarLength: 15,
-                        },
-                        {
-                            label: "Vencido con Internos",
-                            data: [3],
-                            backgroundColor: "#e74c3c",
-                            borderWidth: 0,
-                            minBarLength: 15,
-                        },
-                        {
-                            label: "Sin Internos",
-                            data: [10],
-                            backgroundColor: "#3498db",
-                            borderWidth: 0,
-                        },
-                        {
-                            label: "Con Internos",
-                            data: [24],
-                            backgroundColor: "#9b59b6",
-                            borderWidth: 0,
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                        },
-                        tooltip: {
-                            enabled: false,
-                        },
-                        datalabels: {
-                            color: "#fff",
-                            anchor: "center",
-                            align: "center",
-                            formatter: (value) => value,
-                            font: {
-                                weight: "bold",
-                                size: 16,
-                            },
-                        },
-                    },
-                    scales: {
-                        x: {
-                            stacked: true,
-                            barPercentage: 0.1,
-                            categoryPercentage: 0.1,
-                            grid: {
-                                display: false,
-                            },
-                            ticks: {
-                                display: false
-                            }
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            display: false,
-                            grid: {
-                                display: false
-                            }
-                        },
-                    },
-                },
-                plugins: [ChartDataLabels],
-            });
+            },
+            plugins: [ChartDataLabels]
         });
-    </script>
+        actualizarTabla();
+    });
+</script>
 </body>
 </html>
