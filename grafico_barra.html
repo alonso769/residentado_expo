@@ -3,203 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Establecimientos de Salud - Dashboard Profesional</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Dashboard EESS - SIS Gestión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0f172a;
-            --bg: #f1f5f9;
+            --accent: #3b82f6;
+            --bg: #f8fafc;
             --card: #ffffff;
-            --accent-env: #6366f1; /* Indigo */
-            --accent-no: #0ea5e9;  /* Sky */
-            --accent-cerr: #f59e0b; /* Amber */
-            --accent-corr: #ef4444; /* Red */
-            --text-main: #1e293b;
-            --text-muted: #64748b;
+            --env: #6366f1;
+            --no-env: #0ea5e9;
+            --cerr: #f59e0b;
+            --corr: #ef4444;
         }
 
         body {
             margin: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg);
-            color: var(--text-main);
-            display: flex;
+            color: var(--primary);
             height: 100vh;
+            display: flex;
             overflow: hidden;
         }
 
-        /* Sidebar Navegación */
+        /* Sidebar Fija con tus Enlaces */
         .sidebar {
-            width: 250px;
+            width: 280px;
             background: var(--primary);
             color: white;
             padding: 30px 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
+            flex-shrink: 0;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
 
-        .sidebar h1 { font-size: 1.3rem; margin-bottom: 40px; font-weight: 800; letter-spacing: -1px; }
+        .sidebar h1 { font-size: 1.4rem; margin-bottom: 30px; font-weight: 700; color: #fff; border-left: 4px solid var(--accent); padding-left: 15px; }
 
-        .nav-link {
+        .nav-buttons { display: flex; flex-direction: column; gap: 12px; }
+
+        .nav-buttons a {
             text-decoration: none;
             color: #94a3b8;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
         }
 
-        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-buttons a:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateX(5px);
+        }
 
-        /* Area Principal */
-        .main-content {
+        /* Contenedor Principal */
+        .main-container {
             flex: 1;
-            padding: 30px;
-            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            padding: 25px;
+            gap: 20px;
+            min-width: 0;
         }
 
-        /* KPIs Superiores */
+        /* KPIs Superiores (Botones de Filtro) */
         .kpi-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            gap: 15px;
+            flex-shrink: 0;
         }
 
         .kpi-card {
             background: var(--card);
-            padding: 24px;
-            border-radius: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            padding: 18px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
             cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
-            border: 1px solid transparent;
+            transition: 0.3s;
+            border-bottom: 4px solid transparent;
         }
 
-        .kpi-card:hover { transform: translateY(-4px); border-color: #e2e8f0; }
-        .kpi-card span { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
-        .kpi-card h2 { margin: 8px 0 0 0; font-size: 2rem; font-weight: 800; }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+        .kpi-card span { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
+        .kpi-card .value { font-size: 1.8rem; font-weight: 800; margin-top: 5px; }
 
-        /* Grid de Datos */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 24px;
+        /* Cuerpo del Dashboard sin Gráfica */
+        .dashboard-body {
             flex: 1;
-            min-height: 500px;
-        }
-
-        .panel-card {
             background: var(--card);
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
             display: flex;
             flex-direction: column;
+            min-height: 0;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .search-bar {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
             padding: 12px 18px;
-            border-radius: 14px;
-            width: 100%;
-            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            width: 350px;
             font-family: inherit;
-            box-sizing: border-box;
+            background: #f8fafc;
         }
 
-        /* Tablas Estilizadas */
-        .table-scroll { flex: 1; overflow-y: auto; border-radius: 12px; border: 1px solid #f1f5f9; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { background: #f8fafc; padding: 14px; text-align: left; position: sticky; top: 0; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid #f1f5f9; }
-        td { padding: 12px 14px; border-bottom: 1px solid #f8fafc; }
-        tr:hover { background: #fdfdfd; }
+        /* Tablas con Scroll Independiente */
+        .data-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            flex: 1;
+            min-height: 0;
+        }
 
-        .badge { padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; }
-        
-        .chart-box { height: 320px; width: 100%; position: relative; margin: auto; }
+        .scroll-area {
+            overflow-y: auto;
+            border: 1px solid #f1f5f9;
+            border-radius: 12px;
+            background: #fff;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #f8fafc; padding: 14px; text-align: left; position: sticky; top: 0; z-index: 10; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; }
+        tr:hover { background: #f8fafc; }
+
+        .badge-ris { background: #eff6ff; color: #3b82f6; padding: 3px 8px; border-radius: 6px; font-weight: 700; }
+
+        /* Scrollbar */
+        .scroll-area::-webkit-scrollbar { width: 6px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <aside class="sidebar">
         <h1>SIS-Gestión</h1>
-        <nav>
-            <a href="#" class="nav-link">📋 Universidades</a>
-            <a href="#" class="nav-link active">🏥 Establecimientos (EESS)</a>
-            <a href="#" class="nav-link">📊 Campos por Carrera</a>
-            <a href="#" class="nav-link">📑 Reportes Mensuales</a>
-        </nav>
+         <div class="nav-buttons">
+        <a href="https://docenciaweb.vercel.app" style="background: rgba(59, 130, 246, 0.2); color: #fff; border: 1px solid var(--accent);">
+            <i class="fas fa-house" style="margin-right: 10px;"></i> Salir
+        </a>
+        <div class="nav-buttons">
+            <a href="convenios.html">Convenios por Universidad</a>
+            <a href="grafico_barra.html">Campos de Formación</a>
+            <a href="campos_clinicos.html">Campos Clinicos</a>
+            <a href="residentado.html" target="_blank">Residentado</a>
+             <a href="conapres.html">CONAPRES</a>
+               <a href="matriz_evaluacion.html">MATRIZ DE EVALUACIÓN</a>
+        </div>
     </aside>
 
-    <main class="main-content">
+    <main class="main-container">
         <div class="kpi-row">
-            <div class="kpi-card" onclick="filtrar('ENVIARON')">
-                <span>Enviaron Información</span>
-                <h2 style="color: var(--accent-env)">76</h2>
+            <div class="kpi-card" style="border-color: var(--env)" onclick="filtrar('ENVIARON')">
+                <span>Enviaron</span>
+                <div class="value" style="color:var(--env)">76</div>
             </div>
-            <div class="kpi-card" onclick="filtrar('NO ENVIARON')">
-                <span>Pendientes de Envío</span>
-                <h2 style="color: var(--accent-no)">6</h2>
+            <div class="kpi-card" style="border-color: var(--no-env)" onclick="filtrar('NO ENVIARON')">
+                <span>No Enviaron</span>
+                <div class="value" style="color:var(--no-env)">6</div>
             </div>
-            <div class="kpi-card" onclick="filtrar('CERRADO')">
-                <span>Establecimientos Cerrados</span>
-                <h2 style="color: var(--accent-cerr)">1</h2>
+            <div class="kpi-card" style="border-color: var(--cerr)" onclick="filtrar('CERRADO')">
+                <span>Cerrado</span>
+                <div class="value" style="color:var(--cerr)">1</div>
             </div>
-            <div class="kpi-card" onclick="filtrar('NO REENVIARON CORRECIONES')">
+            <div class="kpi-card" style="border-color: var(--corr)" onclick="filtrar('NO REENVIARON CORRECIONES')">
                 <span>Sin Subsanar</span>
-                <h2 style="color: var(--accent-corr)">1</h2>
+                <div class="value" style="color:var(--corr)">1</div>
             </div>
         </div>
 
-        <div class="dashboard-grid">
-            <div class="panel-card">
-                <h3 style="margin: 0 0 20px 0; font-size: 1rem; color: var(--text-muted)">Distribución de 84 EESS</h3>
-                <div class="chart-box">
-                    <canvas id="donaChart"></canvas>
-                </div>
-                <div style="margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-                    <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Haga clic en una categoría arriba para filtrar el listado.</p>
-                </div>
+        <div class="dashboard-body">
+            <div class="search-container">
+                <h3 id="tituloTabla" style="margin:0; font-size: 1.2rem;">Detalle: ENVIARON</h3>
+                <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar establecimiento...">
             </div>
-
-            <div class="panel-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                    <h3 id="tituloTabla" style="margin:0; font-size: 1.1rem;">EESS: ENVIARON</h3>
-                    <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar establecimiento..." style="max-width: 300px; margin-bottom:0">
+            
+            <div class="data-section">
+                <div class="scroll-area">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">RIS</th>
+                                <th>NOMBRE DEL ESTABLECIMIENTO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyEESS"></tbody>
+                    </table>
                 </div>
-                
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; flex: 1; min-height: 0; margin-top: 20px;">
-                    <div class="table-scroll">
-                        <table id="tablaEESS">
-                            <thead><tr><th>RIS</th><th>NOMBRE DEL ESTABLECIMIENTO</th></tr></thead>
-                            <tbody id="bodyEESS"></tbody>
-                        </table>
-                    </div>
-                    <div class="table-scroll">
-                        <table id="tablaRIS">
-                            <thead><tr><th>RIS</th><th>CANTIDAD</th></tr></thead>
-                            <tbody id="bodyRIS"></tbody>
-                        </table>
-                    </div>
+                <div class="scroll-area">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>RIS</th>
+                                <th>CANTIDAD</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyRIS"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </main>
 
-<script>
-   const datos = [
+    <script>
+       const datos = [
             { RIS: "RIS 7", EESS: "CS 10 DE OCTUBRE", ESTADO: "ENVIARON" },
             { RIS: "RIS 6", EESS: "CS BAYOVAR", ESTADO: "ENVIARON" },
             { RIS: "RIS 2", EESS: "CS BREÑA", ESTADO: "ENVIARON" },
@@ -285,63 +309,51 @@
             { RIS: "RIS 1", EESS: "PS SANTA ROSA", ESTADO: "ENVIARON" },
             { RIS: "RIS 7", EESS: "PS TUPAC AMARU II", ESTADO: "NO ENVIARON" },
         ];
-    let filtroActual = 'ENVIARON';
 
-    function renderizar(busqueda = '') {
-        const bodyEESS = document.getElementById("bodyEESS");
-        const bodyRIS = document.getElementById("bodyRIS");
-        document.getElementById("tituloTabla").innerText = `EESS: ${filtroActual}`;
+        let filtroActual = 'ENVIARON';
 
-        const filtrados = datos.filter(d => 
-            d.ESTADO === filtroActual && 
-            d.EESS.toLowerCase().includes(busqueda.toLowerCase())
-        ).sort((a,b) => a.RIS.localeCompare(b.RIS));
+        function renderizar(busqueda = '') {
+            const bodyEESS = document.getElementById("bodyEESS");
+            const bodyRIS = document.getElementById("bodyRIS");
+            document.getElementById("tituloTabla").innerText = `Detalle: ${filtroActual}`;
 
-        // Render Detalle
-        bodyEESS.innerHTML = filtrados.map(d => `
-            <tr><td><span class="badge" style="background: #eff6ff; color: #3b82f6;">${d.RIS}</span></td><td><strong>${d.EESS}</strong></td></tr>
-        `).join('');
+            const filtrados = datos.filter(d => 
+                d.ESTADO === filtroActual && 
+                d.EESS.toLowerCase().includes(busqueda.toLowerCase())
+            ).sort((a,b) => a.RIS.localeCompare(b.RIS));
 
-        // Render Resumen por RIS
-        const resumen = filtrados.reduce((acc, c) => { acc[c.RIS] = (acc[c.RIS] || 0) + 1; return acc; }, {});
-        bodyRIS.innerHTML = Object.keys(resumen).sort().map(ris => `
-            <tr><td>${ris}</td><td style="font-weight:700">${resumen[ris]}</td></tr>
-        `).join('');
-    }
+            // Renderizar Establecimientos
+            bodyEESS.innerHTML = filtrados.map(d => `
+                <tr>
+                    <td><span class="badge-ris">${d.RIS}</span></td>
+                    <td><strong>${d.EESS}</strong></td>
+                </tr>
+            `).join('');
 
-    function filtrar(estado) {
-        filtroActual = estado;
-        renderizar();
-    }
+            // Renderizar Resumen RIS
+            const resumen = filtrados.reduce((acc, c) => { 
+                acc[c.RIS] = (acc[c.RIS] || 0) + 1; 
+                return acc; 
+            }, {});
 
-    document.getElementById('buscador').addEventListener('input', (e) => renderizar(e.target.value));
+            bodyResumen = Object.keys(resumen).sort().map(ris => `
+                <tr>
+                    <td>${ris}</td>
+                    <td style="font-weight:700">${resumen[ris]}</td>
+                </tr>
+            `).join('');
+            document.getElementById("bodyRIS").innerHTML = bodyResumen;
+        }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const ctx = document.getElementById("donaChart").getContext("2d");
-        new Chart(ctx, {
-            type: "doughnut",
-            data: {
-                labels: ["Enviaron", "No Enviaron", "Cerrado", "Sin Corrección"],
-                datasets: [{
-                    data: [76, 6, 1, 1],
-                    backgroundColor: ["#6366f1", "#0ea5e9", "#f59e0b", "#ef4444"],
-                    hoverOffset: 20,
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '78%',
-                plugins: {
-                    legend: { display: true, position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { family: 'Plus Jakarta Sans', size: 12 } } },
-                    datalabels: { color: '#1e293b', font: { weight: 'bold' } }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
-        renderizar();
-    });
-</script>
+        function filtrar(estado) {
+            filtroActual = estado;
+            renderizar();
+        }
+
+        document.getElementById('buscador').addEventListener('input', (e) => renderizar(e.target.value));
+
+        // Carga inicial
+        document.addEventListener('DOMContentLoaded', () => renderizar());
+    </script>
 </body>
 </html>

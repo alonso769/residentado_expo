@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIS-Gestión Premium - CONAPRES</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --bg: #f8fafc;
+            --card: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Unificada */
+        .sidebar {
+            width: 280px;
+            background: var(--primary);
+            color: white;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-shrink: 0;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar h1 { font-size: 1.4rem; margin-bottom: 30px; font-weight: 700; border-left: 4px solid var(--accent); padding-left: 15px; }
+        
+        .nav-buttons { display: flex; flex-direction: column; gap: 12px; }
+
+        .nav-buttons a {
+            text-decoration: none;
+            color: #94a3b8;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+
+        .nav-buttons a:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-buttons a.active { background: var(--accent); color: white; }
+
+        /* Contenedor Principal */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            gap: 20px;
+        }
+
+        .pdf-panel {
+            flex: 1;
+            background: var(--card);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-info {
+            padding: 15px 25px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info h2 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+
+        /* Estilo del visor PDF */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h1>SIS-Gestión</h1>
+         <div class="nav-buttons">
+        <a href="https://docenciaweb.vercel.app" style="background: rgba(59, 130, 246, 0.2); color: #fff; border: 1px solid var(--accent);">
+            <i class="fas fa-house" style="margin-right: 10px;"></i> Salir
+        </a>
+        <div class="nav-buttons">
+            <a href="convenios.html">Convenios por Universidad</a>
+            <a href="grafico_barra.html">Campos de Formación</a>
+            <a href="campos_clinicos.html">N° Campos por Carrera</a>
+            <a href="residentado.html">Residentado</a>
+            <a href="conapres.html" class="active">CONAPRES</a>
+              <a href="matriz_evaluacion.html">MATRIZ DE EVALUACIÓN</a>
+        </div>
+    </aside>
+
+    <main class="main-container">
+        <div class="pdf-panel">
+            <div class="header-info">
+                <h2>Visor de Documento: CONAPRES</h2>
+                <span style="font-size: 0.8rem; color: #64748b; background: #f1f5f9; padding: 4px 10px; border-radius: 6px;">Archivo PDF Oficial</span>
+            </div>
+            <iframe src="PDF/ARCHIVO1.pdf#toolbar=1&navpanes=0"></iframe>
+        </div>
+    </main>
+
+</body>
+</html>
